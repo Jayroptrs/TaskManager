@@ -1,0 +1,68 @@
+button {
+    cursor: pointer;
+}
+
+.btn {
+    background: var(--color-primary);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 70%, transparent);
+    border-radius: var(--radius-xl);
+    color: var(--color-primary-foreground);
+    padding-inline: calc(var(--spacing) * 3);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    height: calc(var(--spacing) * 8);
+    line-height: calc(var(--spacing) * 8);
+    display: inline-block;
+    transition: transform 180ms ease, box-shadow 200ms ease, background-color 180ms ease, border-color 180ms ease;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+.btn.btn-outlined {
+    background: color-mix(in srgb, var(--color-card) 88%, transparent);
+    border: 1px solid var(--color-border);
+    color: var(--color-foreground);
+    box-shadow: none;
+}
+
+.btn.btn-outlined:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 44%, var(--color-border));
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-card));
+}
+
+.btn.btn-ghost {
+    background: transparent;
+}
+
+.btn:has(> svg) {
+    display: flex;
+    align-items: center;
+    column-gap: calc(var(--spacing) * 2);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--color-primary) 88%, white 12%);
+    color: var(--color-primary-foreground);
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--color-primary) 78%, transparent);
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--color-primary) 44%, transparent);
+}
+
+.btn.btn-outlined:hover {
+    color: var(--color-foreground);
+}
+
+.btn.btn-danger-outlined {
+    background: color-mix(in srgb, var(--color-card) 90%, transparent);
+    border: 1px solid color-mix(in srgb, #ef4444 52%, var(--color-border));
+    color: color-mix(in srgb, #ef4444 85%, var(--color-foreground));
+    box-shadow: none;
+}
+
+.btn.btn-danger-outlined:hover {
+    background: color-mix(in srgb, #ef4444 16%, var(--color-card));
+    border-color: color-mix(in srgb, #ef4444 82%, transparent);
+    color: color-mix(in srgb, #ef4444 94%, white 8%);
+    box-shadow: 0 12px 24px color-mix(in srgb, #ef4444 35%, transparent);
+}

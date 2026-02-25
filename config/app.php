@@ -123,4 +123,9 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'admin_emails' => array_values(array_filter(array_map(
+        fn (string $email) => trim($email),
+        explode(',', (string) env('ADMIN_EMAILS', ''))
+    ))),
+
 ];
