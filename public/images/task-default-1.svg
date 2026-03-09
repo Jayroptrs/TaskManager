@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 1</title>
+  <desc id="desc">Abstract gradient background with circles.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#164e63"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="220" cy="180" r="170" fill="#14b8a6" opacity="0.4"/>
+  <circle cx="980" cy="460" r="220" fill="#22d3ee" opacity="0.28"/>
+  <circle cx="820" cy="170" r="90" fill="#99f6e4" opacity="0.45"/>
+</svg>

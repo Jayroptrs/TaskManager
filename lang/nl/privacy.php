@@ -1,0 +1,50 @@
+<?php
+
+return [
+    'title' => 'Privacyverklaring (AVG)',
+    'version' => 'Versie: 1.2 - Laatst bijgewerkt: 26-02-2026.',
+    'sections' => [
+        'controller_title' => '1. Wie is verwerkingsverantwoordelijke?',
+        'service' => 'Dienst:',
+        'service_value' => 'Jayro',
+        'contact' => 'Contact:',
+        'contact_value' => 'via het supportformulier op de supportpagina',
+        'email' => 'E-mail privacy:',
+        'data_title' => '2. Welke persoonsgegevens verwerken wij?',
+        'data_items' => [
+            'Accountgegevens: naam, e-mailadres en gehashte wachtwoorden.',
+            'Gebruikersinhoud: taken, subtaken/checklist-items, opmerkingen, tags, links en eventuele afbeeldingen.',
+            'Samenwerkingsgegevens: uitnodigingen, rollen (eigenaar/samenwerker) en toewijzingen op checklist-stappen.',
+            'Technische gegevens: IP-adres, user-agent en sessie-informatie voor beveiliging en werking.',
+            'Communicatiegegevens: berichten die je aan support stuurt.',
+        ],
+        'purpose_title' => '3. Doeleinden en grondslagen (art. 6 AVG)',
+        'purpose_items' => [
+            'Uitvoering overeenkomst: account aanmaken, inloggen, taken beheren en samenwerken binnen taken.',
+            'Gerechtvaardigd belang: beveiliging, misbruikpreventie en foutanalyse.',
+            'Wettelijke verplichting: bewaren van gegevens indien wettelijk vereist.',
+            'Toestemming: alleen waar wettelijk nodig.',
+        ],
+        'sharing_title' => '4. Ontvangers, verwerkers en doorgifte',
+        'sharing_items' => [
+            'Wij delen gegevens alleen met partijen die nodig zijn voor de dienstverlening, zoals hostingproviders.',
+            'Bij gebruik van reCAPTCHA (voor niet-ingelogde supportberichten) worden verificatiegegevens gedeeld met Google.',
+            'Supportberichten kunnen binnen Jayro worden ingezien door bevoegde beheerders om verzoeken af te handelen.',
+            'Met verwerkers sluiten wij verwerkersovereenkomsten waar nodig.',
+            'Doorgifte buiten de EER gebeurt alleen met passende waarborgen, zoals Standard Contractual Clauses (indien van toepassing).',
+        ],
+        'retention_title' => '5. Bewaartermijnen',
+        'retention_items' => [
+            'Account- en taakdata: zolang je account actief is.',
+            'Bij verwijdering van een account worden gekoppelde accountgegevens verwijderd volgens de ingestelde database-relaties.',
+            'Supportberichten en beveiligingsrelevante metadata bewaren wij niet langer dan noodzakelijk voor afhandeling, beveiliging en wettelijke verplichtingen.',
+        ],
+        'rights_title' => '6. Jouw privacyrechten',
+        'rights_text_1' => 'Je hebt recht op inzage, rectificatie, verwijdering, beperking, overdraagbaarheid van gegevens en bezwaar. Verzoeken kun je indienen via :email of via het supportformulier. We reageren in principe binnen 1 maand.',
+        'rights_text_2' => 'Je hebt ook het recht om een klacht in te dienen bij de Autoriteit Persoonsgegevens.',
+        'security_title' => '7. Beveiliging',
+        'security_text' => 'Wij nemen passende technische en organisatorische maatregelen om persoonsgegevens te beschermen tegen verlies, ongeautoriseerde toegang en misbruik.',
+        'changes_title' => '8. Wijzigingen',
+        'changes_text' => 'Wij kunnen deze privacyverklaring wijzigen. De meest actuele versie staat altijd op deze pagina.',
+    ],
+];

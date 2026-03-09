@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'recaptcha_required' => 'reCAPTCHA is niet geladen of niet ingevuld. Controleer adblockers, domeininstellingen en probeer opnieuw.',
+    'recaptcha_failed' => 'reCAPTCHA verificatie mislukt. Probeer opnieuw.',
+    'support_sent' => 'Je supportbericht is verzonden.',
+    'task_status_updated' => 'Status bijgewerkt.',
+    'login_success' => 'Je bent succesvol ingelogd.',
+    'collab_added' => 'Samenwerker toegevoegd.',
+    'collab_request_sent' => 'Uitnodiging verstuurd. De gebruiker kan deze accepteren of weigeren.',
+    'collab_removed' => 'Samenwerker verwijderd.',
+    'collab_request_accepted' => 'Uitnodiging geaccepteerd.',
+    'collab_request_rejected' => 'Uitnodiging geweigerd.',
+    'invite_link_created' => 'Invite-link aangemaakt.',
+    'invite_link_created_previous_invalidated' => 'Nieuwe invite-link aangemaakt. De vorige invite-link is ongeldig gemaakt.',
+    'invite_link_copied' => 'Invite-link gekopieerd.',
+    'invite_link_copy_failed' => 'Kopiëren van invite-link mislukt.',
+    'invite_accepted' => 'Je werkt nu mee aan deze taak.',
+    'left_task' => 'Je hebt deze taak verlaten.',
+    'account_deleted' => 'Je account is verwijderd.',
+    'avatar_removed' => 'Je profielfoto is verwijderd.',
+    'comment_added' => 'Reactie geplaatst.',
+    'comment_reply_added' => 'Reactie geplaatst in de thread.',
+    'comment_deleted' => 'Reactie verwijderd.',
+    'inbox_mentions_marked_read' => 'Alle mentions zijn gemarkeerd als gelezen.',
+    'inbox_reminders_marked_read' => 'Alle herinneringen zijn gemarkeerd als gelezen.',
+    'open_tasks_limit_reached' => 'Je hebt het maximum van :max open taken bereikt. Rond eerst een taak af.',
+];

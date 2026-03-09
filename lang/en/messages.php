@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'recaptcha_required' => 'reCAPTCHA is not loaded or not completed. Check blockers, domain settings, and try again.',
+    'recaptcha_failed' => 'reCAPTCHA verification failed. Please try again.',
+    'support_sent' => 'Your support message has been sent.',
+    'task_status_updated' => 'Status updated.',
+    'login_success' => 'You have logged in successfully.',
+    'collab_added' => 'Collaborator added.',
+    'collab_request_sent' => 'Invite sent. The user can now accept or decline it.',
+    'collab_removed' => 'Collaborator removed.',
+    'collab_request_accepted' => 'Invite accepted.',
+    'collab_request_rejected' => 'Invite declined.',
+    'invite_link_created' => 'Invite link created.',
+    'invite_link_created_previous_invalidated' => 'New invite link created. The previous invite link has been invalidated.',
+    'invite_link_copied' => 'Invite link copied.',
+    'invite_link_copy_failed' => 'Failed to copy invite link.',
+    'invite_accepted' => 'You now collaborate on this task.',
+    'left_task' => 'You left this task.',
+    'account_deleted' => 'Your account has been deleted.',
+    'avatar_removed' => 'Your profile photo has been removed.',
+    'comment_added' => 'Comment posted.',
+    'comment_reply_added' => 'Reply posted in thread.',
+    'comment_deleted' => 'Comment removed.',
+    'inbox_mentions_marked_read' => 'All mentions have been marked as read.',
+    'inbox_reminders_marked_read' => 'All reminders have been marked as read.',
+    'open_tasks_limit_reached' => 'You reached the limit of :max open tasks. Complete a task first.',
+];

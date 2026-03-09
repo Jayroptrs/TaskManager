@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'title' => 'Terms and conditions',
+    'version' => 'Version: 1.2 - Last updated: 26-02-2026.',
+    'sections' => [
+        'identity_title' => '1. Provider identity',
+        'service_name' => 'Service name:',
+        'service_name_value' => 'Jayro',
+        'service_type' => 'Service type:',
+        'service_type_value' => 'online task board and project management',
+        'contact' => 'Contact:',
+        'contact_value' => 'via the support form on the support page',
+        'email' => 'Email:',
+        'applicability_title' => '2. Applicability',
+        'applicability_text' => 'These terms apply to any use of Jayro and all agreements between the user and the provider of Jayro.',
+        'account_title' => '3. Account and use',
+        'account_items' => [
+            'You are responsible for keeping your login credentials confidential.',
+            'You may not use the service for unlawful or harmful purposes.',
+            'You may not post content that infringes third-party rights.',
+            'As a task owner, you are responsible for who you invite as collaborators.',
+            'Collaborators may only act within shared tasks and may not bypass security or permissions.',
+        ],
+        'availability_title' => '4. Availability and maintenance',
+        'availability_text' => 'Jayro is provided as an online service. We aim for continuity but cannot guarantee 100% uninterrupted availability. Maintenance may temporarily affect accessibility.',
+        'ip_title' => '5. Intellectual property',
+        'ip_text' => 'All rights to software, brand, design, and documentation of Jayro remain with the provider. You only receive a limited, non-transferable right of use.',
+        'liability_title' => '6. Liability',
+        'liability_text' => 'To the extent permitted by law, liability is limited to direct damages and to the amount paid for the service in the 12 months preceding the damage (or EUR 0 if use is free), unless there is intent or willful recklessness.',
+        'termination_title' => '7. Termination',
+        'termination_text' => 'We may block or terminate access in case of misuse, breach of these terms, or where necessary for safety and legal compliance.',
+        'law_title' => '8. Governing law and disputes',
+        'law_text' => 'These terms are governed by Dutch law. Disputes are submitted to the competent court in the Netherlands, unless mandatory consumer law requires otherwise.',
+        'changes_title' => '9. Changes',
+        'changes_text' => 'We may update these terms. The most current version is always available on this page. For material changes, we inform users within the application.',
+    ],
+];

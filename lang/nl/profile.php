@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Wijzig je account',
+    'description' => 'Iets aanpassen?',
+    'account_section' => 'Accountgegevens',
+    'password_section' => 'Wachtwoord wijzigen',
+    'name' => 'Naam',
+    'name_placeholder' => 'Naam..',
+    'email' => 'Email',
+    'email_placeholder' => 'Email..',
+    'current_password' => 'Huidig wachtwoord',
+    'current_password_placeholder' => 'Huidig wachtwoord..',
+    'new_password' => 'Nieuw wachtwoord',
+    'new_password_placeholder' => 'Wachtwoord..',
+    'confirm_password' => 'Bevestig nieuw wachtwoord',
+    'confirm_password_placeholder' => 'Herhaal nieuw wachtwoord..',
+    'avatar_section' => 'Profielfoto',
+    'avatar' => 'Upload profielfoto',
+    'remove_avatar' => 'Verwijder huidige profielfoto',
+    'delete_section' => 'Account verwijderen',
+    'delete_description' => 'Hiermee verwijder je je account en bijbehorende gegevens permanent. Deze actie kan niet ongedaan worden gemaakt.',
+    'delete_password' => 'Bevestig met je wachtwoord',
+    'delete_password_placeholder' => 'Vul je huidige wachtwoord in..',
+    'delete_password_invalid' => 'Het ingevoerde wachtwoord is onjuist.',
+    'delete_account' => 'Verwijder account',
+    'save' => 'Opslaan',
+];

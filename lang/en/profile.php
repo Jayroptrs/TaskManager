@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Edit your account',
+    'description' => 'Need to update something?',
+    'account_section' => 'Account details',
+    'password_section' => 'Change password',
+    'name' => 'Name',
+    'name_placeholder' => 'Name..',
+    'email' => 'Email',
+    'email_placeholder' => 'Email..',
+    'current_password' => 'Current password',
+    'current_password_placeholder' => 'Current password..',
+    'new_password' => 'New password',
+    'new_password_placeholder' => 'Password..',
+    'confirm_password' => 'Confirm new password',
+    'confirm_password_placeholder' => 'Repeat new password..',
+    'avatar_section' => 'Profile photo',
+    'avatar' => 'Upload profile photo',
+    'remove_avatar' => 'Remove current profile photo',
+    'delete_section' => 'Delete account',
+    'delete_description' => 'This will permanently delete your account and related data. This action cannot be undone.',
+    'delete_password' => 'Confirm with your password',
+    'delete_password_placeholder' => 'Enter your current password..',
+    'delete_password_invalid' => 'The provided password is incorrect.',
+    'delete_account' => 'Delete account',
+    'save' => 'Save',
+];

@@ -23,13 +23,13 @@ class SupportController extends Controller
 
         return view('pages.support', [
             'myMessages' => $myMessages,
+            'recaptchaEnabledForGuest' => $this->recaptchaEnabledFor($request),
         ]);
     }
 
     public function store(Request $request)
     {
-        $isGuest = !$request->user();
-        $recaptchaEnabled = $isGuest && config('services.recaptcha.enabled');
+        $recaptchaEnabled = $this->recaptchaEnabledFor($request);
 
         $baseRules = [
             'subject' => ['required', 'string', 'min:5', 'max:120'],
@@ -48,7 +48,10 @@ class SupportController extends Controller
             ? ['g-recaptcha-response' => ['required', 'string']]
             : [];
 
-        $validated = $request->validate([...$baseRules, ...$guestRules, ...$captchaRules]);
+        $validated = $request->validate(
+            [...$baseRules, ...$guestRules, ...$captchaRules],
+            ['g-recaptcha-response.required' => __('messages.recaptcha_required')]
+        );
 
         if ($recaptchaEnabled) {
             $verifyResponse = Http::asForm()
@@ -61,7 +64,7 @@ class SupportController extends Controller
 
             if (!$verifyResponse->ok() || !$verifyResponse->json('success')) {
                 throw ValidationException::withMessages([
-                    'g-recaptcha-response' => 'reCAPTCHA verificatie mislukt. Probeer opnieuw.',
+                    'g-recaptcha-response' => __('messages.recaptcha_failed'),
                 ]);
             }
         }
@@ -77,6 +80,23 @@ class SupportController extends Controller
             'user_agent' => mb_substr((string) $request->userAgent(), 0, 1000),
         ]);
 
-        return back()->with('success', 'Je supportbericht is verzonden.');
+        return back()->with('success', __('messages.support_sent'));
+    }
+
+    private function recaptchaEnabledFor(Request $request): bool
+    {
+        if ($request->user()) {
+            return false;
+        }
+
+        if (! (bool) config('services.recaptcha.enabled')) {
+            return false;
+        }
+
+        if (! filled(config('services.recaptcha.site_key')) || ! filled(config('services.recaptcha.secret_key'))) {
+            return false;
+        }
+
+        return true;
     }
 }

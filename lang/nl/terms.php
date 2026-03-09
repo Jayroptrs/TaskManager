@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'title' => 'Algemene voorwaarden',
+    'version' => 'Versie: 1.2 - Laatst bijgewerkt: 26-02-2026.',
+    'sections' => [
+        'identity_title' => '1. Identiteit aanbieder',
+        'service_name' => 'Dienstnaam:',
+        'service_name_value' => 'Jayro',
+        'service_type' => 'Type dienst:',
+        'service_type_value' => 'online takenbord en projectbeheer',
+        'contact' => 'Contact:',
+        'contact_value' => 'via het supportformulier op de supportpagina',
+        'email' => 'E-mail:',
+        'applicability_title' => '2. Toepasselijkheid',
+        'applicability_text' => 'Deze voorwaarden zijn van toepassing op elk gebruik van Jayro en op alle overeenkomsten tussen gebruiker en aanbieder van Jayro.',
+        'account_title' => '3. Account en gebruik',
+        'account_items' => [
+            'Je bent verantwoordelijk voor geheimhouding van je inloggegevens.',
+            'Je gebruikt de dienst niet voor onrechtmatige of schadelijke doeleinden.',
+            'Je plaatst geen content die inbreuk maakt op rechten van derden.',
+            'Als eigenaar van een taak ben je verantwoordelijk voor wie je uitnodigt als samenwerker.',
+            'Samenwerkers mogen alleen binnen gedeelde taken handelen en geen beveiliging of rechten omzeilen.',
+        ],
+        'availability_title' => '4. Beschikbaarheid en onderhoud',
+        'availability_text' => 'Jayro wordt geleverd als online dienst. Wij streven naar continuiteit, maar kunnen geen 100% ononderbroken beschikbaarheid garanderen. Onderhoud kan tijdelijk invloed hebben op toegankelijkheid.',
+        'ip_title' => '5. Intellectuele eigendom',
+        'ip_text' => 'Alle rechten op software, merk, vormgeving en documentatie van Jayro blijven eigendom van de aanbieder. Je ontvangt uitsluitend een beperkt, niet-overdraagbaar gebruiksrecht.',
+        'liability_title' => '6. Aansprakelijkheid',
+        'liability_text' => 'Voor zover wettelijk toegestaan is aansprakelijkheid beperkt tot directe schade en maximaal het bedrag dat in de 12 maanden voorafgaand aan de schade is betaald voor de dienst (of EUR 0 indien gebruik kosteloos is), tenzij sprake is van opzet of bewuste roekeloosheid.',
+        'termination_title' => '7. Beeindiging',
+        'termination_text' => 'Wij mogen toegang blokkeren of beeindigen bij misbruik, schending van deze voorwaarden of wanneer dit noodzakelijk is voor veiligheid en naleving van wet- en regelgeving.',
+        'law_title' => '8. Toepasselijk recht en geschillen',
+        'law_text' => 'Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter in Nederland, tenzij dwingend consumentenrecht anders bepaalt.',
+        'changes_title' => '9. Wijzigingen',
+        'changes_text' => 'Wij kunnen deze voorwaarden wijzigen. De meest actuele versie staat altijd op deze pagina. Bij wezenlijke wijzigingen informeren wij gebruikers binnen de applicatie.',
+    ],
+];

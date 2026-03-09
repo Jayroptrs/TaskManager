@@ -24,6 +24,7 @@ class TaskFactory extends Factory
             'description' => fake()->paragraph(),
             'links' => [fake()->url()],
             'tags' => [fake()->word()],
+            'reminder_days' => [7, 3, 1],
         ];
     }
 }

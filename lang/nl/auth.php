@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'login_title' => 'Inloggen',
+    'login_description' => 'Leuk dat je er bent!',
+    'register_title' => 'Registreer een account',
+    'register_description' => 'Begin vandaag met het bijhouden van je taken!',
+    'name' => 'Naam',
+    'name_placeholder' => 'Naam..',
+    'email' => 'Email',
+    'email_placeholder' => 'Email..',
+    'password' => 'Wachtwoord',
+    'password_placeholder' => 'Wachtwoord..',
+    'password_confirmation' => 'Bevestig wachtwoord',
+    'password_confirmation_placeholder' => 'Herhaal wachtwoord..',
+    'login_help' => 'Problemen met inloggen?',
+    'login_help_link' => 'Neem contact op via support',
+    'register_help' => 'Problemen met registreren?',
+    'register_help_link' => 'Neem contact op via support',
+    'no_account' => 'Nog geen account?',
+    'have_account' => 'Heb je al een account?',
+    'invalid_credentials' => 'De inloggegevens kloppen niet.',
+    'login_button' => 'Inloggen',
+    'register_button' => 'Registreer',
+];

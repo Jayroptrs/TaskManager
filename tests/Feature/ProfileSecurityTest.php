@@ -31,7 +31,7 @@ test('updating password with correct current password works', function () {
             'password' => 'newpassword123',
             'password_confirmation' => 'newpassword123',
         ])
-        ->assertRedirect(route('task.index'));
+        ->assertRedirect(route('profile.edit'));
 
     expect(Hash::check('newpassword123', $user->fresh()->password))->toBeTrue();
 });

@@ -40,12 +40,90 @@
     --color-muted-foreground: oklch(0.67 0.02 220);
 }
 
+:root[data-accent='green'] {
+    --color-primary: oklch(0.68 0.17 162);
+}
+
+:root[data-theme='dark'][data-accent='green'] {
+    --color-primary: oklch(0.74 0.16 162);
+}
+
+:root[data-accent='cyan'] {
+    --color-primary: oklch(0.72 0.14 210);
+}
+
+:root[data-theme='dark'][data-accent='cyan'] {
+    --color-primary: oklch(0.78 0.13 210);
+}
+
+:root[data-accent='rose'] {
+    --color-primary: oklch(0.66 0.19 20);
+}
+
+:root[data-theme='dark'][data-accent='rose'] {
+    --color-primary: oklch(0.72 0.17 20);
+}
+
+:root[data-accent='pink'] {
+    --color-primary: oklch(0.69 0.19 358);
+}
+
+:root[data-theme='dark'][data-accent='pink'] {
+    --color-primary: oklch(0.75 0.16 358);
+}
+
+:root[data-accent='orange'] {
+    --color-primary: oklch(0.74 0.17 52);
+}
+
+:root[data-theme='dark'][data-accent='orange'] {
+    --color-primary: oklch(0.8 0.14 52);
+}
+
+:root[data-accent='violet'] {
+    --color-primary: oklch(0.64 0.2 311);
+}
+
+:root[data-theme='dark'][data-accent='violet'] {
+    --color-primary: oklch(0.71 0.17 311);
+}
+
+:root[data-accent='yellow'] {
+    --color-primary: oklch(0.8 0.16 95);
+}
+
+:root[data-theme='dark'][data-accent='yellow'] {
+    --color-primary: oklch(0.86 0.14 95);
+}
+
+:root[data-motion='off'] *,
+:root[data-motion='off'] *::before,
+:root[data-motion='off'] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
+
+:root[data-motion='off'] *:hover,
+:root[data-motion='off'] *:focus,
+:root[data-motion='off'] *:active {
+    transform: none !important;
+}
+
 html,
 body {
     min-height: 100%;
 }
 
+html {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-background);
+}
+
 body {
+    margin: 0;
+    padding: 0;
     background:
         radial-gradient(1100px 520px at -10% -15%, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent),
         radial-gradient(920px 500px at 105% -10%, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent),
@@ -58,6 +136,11 @@ a {
 
 a:not(.btn):not(.no-link-hover):hover {
     color: color-mix(in srgb, var(--color-primary) 72%, var(--color-foreground));
+}
+
+img {
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 
@@ -206,6 +289,49 @@ a:not(.btn):not(.no-link-hover):hover {
     background: color-mix(in srgb, var(--color-input) 25%, transparent);
 }
 
+.faq-item {
+    overflow: hidden;
+}
+
+.faq-summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.faq-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted-foreground);
+    transform: rotate(0deg);
+    transition: transform 260ms ease, color 180ms ease, filter 180ms ease;
+}
+
+.faq-chevron.is-rotated {
+    transform: rotate(90deg);
+}
+
+.faq-summary:hover .faq-chevron,
+.faq-summary:focus-visible .faq-chevron {
+    color: var(--color-foreground);
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 45%, transparent));
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0.65;
+    transition: max-height 280ms ease, opacity 220ms ease;
+}
+
+.faq-answer-inner {
+    overflow: hidden;
+}
+
 /* --- Fix Chrome/Edge autofill on dark inputs --- */
 .input:-webkit-autofill,
 .input:-webkit-autofill:hover,
@@ -216,7 +342,7 @@ a:not(.btn):not(.no-link-hover):hover {
 
   box-shadow:
     0 0 0px 1000px var(--color-card) inset,
-    0 0 0 2px var(--color-primary);
+    0 0 0 2px #22c55e;
 
   transition: background-color 9999s ease-in-out 0s;
 }
@@ -226,5 +352,6 @@ a:not(.btn):not(.no-link-hover):hover {
 .textarea:-webkit-autofill:focus {
   box-shadow:
     0 0 0px 1000px var(--color-card) inset,
-    0 0 0 2px var(--color-primary);
+    0 0 0 2px #22c55e;
 }
+

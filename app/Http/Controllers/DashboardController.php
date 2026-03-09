@@ -15,11 +15,17 @@ class DashboardController extends Controller
         $last7Days = $now->copy()->subDays(7);
         $activityStart = $now->copy()->subDays(13)->startOfDay();
 
-        $tasks = $user->tasks()
+        $tasks = Task::query()
+            ->visibleTo($user)
             ->with('steps:id,idea_id,completed')
+            ->withCount('collaborators')
             ->get();
 
         $totalTasks = $tasks->count();
+        $ownedTasks = $tasks->where('user_id', $user->id)->count();
+        $collaborativeTasks = $tasks
+            ->filter(fn (Task $task) => $task->user_id !== $user->id || (int) $task->collaborators_count > 0)
+            ->count();
         $pendingTasks = $tasks->where('status', TaskStatus::PENDING)->count();
         $inProgressTasks = $tasks->where('status', TaskStatus::IN_PROGRESS)->count();
         $completedTasks = $tasks->where('status', TaskStatus::COMPLETED)->count();
@@ -74,6 +80,8 @@ class DashboardController extends Controller
 
         return view('dashboard.index', [
             'totalTasks' => $totalTasks,
+            'ownedTasks' => $ownedTasks,
+            'collaborativeTasks' => $collaborativeTasks,
             'pendingTasks' => $pendingTasks,
             'inProgressTasks' => $inProgressTasks,
             'completedTasks' => $completedTasks,

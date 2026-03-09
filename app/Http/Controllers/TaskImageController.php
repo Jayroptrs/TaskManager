@@ -10,9 +10,11 @@ class TaskImageController extends Controller
 {
     public function destroy(Task $task)
     {
-        Gate::authorize('workWith', $task);
+        Gate::authorize('manageTask', $task);
 
-        Storage::disk('public')->delete($task->image_path);
+        if ($task->hasUploadedImage()) {
+            Storage::disk('public')->delete($task->image_path);
+        }
         
         $task->update(['image_path' => null]);
 

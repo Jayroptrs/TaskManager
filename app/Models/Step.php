@@ -14,6 +14,7 @@ class Step extends Model
     protected $fillable = [
         'description',
         'completed',
+        'assigned_user_id',
     ];
 
     protected $attributes = [
@@ -28,5 +29,10 @@ class Step extends Model
     public function idea(): BelongsTo
     {
         return $this->task();
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
     }
 }

@@ -1,0 +1,50 @@
+<?php
+
+return [
+    'title' => 'Privacy statement (GDPR)',
+    'version' => 'Version: 1.2 - Last updated: 26-02-2026.',
+    'sections' => [
+        'controller_title' => '1. Who is the data controller?',
+        'service' => 'Service:',
+        'service_value' => 'Jayro',
+        'contact' => 'Contact:',
+        'contact_value' => 'via the support form on the support page',
+        'email' => 'Privacy email:',
+        'data_title' => '2. Which personal data do we process?',
+        'data_items' => [
+            'Account data: name, email address, and hashed passwords.',
+            'User content: tasks, subtasks/checklist items, comments, tags, links, and optional images.',
+            'Collaboration data: invitations, roles (owner/collaborator), and checklist step assignments.',
+            'Technical data: IP address, user agent, and session information for security and operation.',
+            'Communication data: messages you send to support.',
+        ],
+        'purpose_title' => '3. Purposes and legal bases (Art. 6 GDPR)',
+        'purpose_items' => [
+            'Contract performance: account creation, login, task management, and collaboration features.',
+            'Legitimate interest: security, abuse prevention, and error analysis.',
+            'Legal obligation: retaining data where legally required.',
+            'Consent: only where legally required.',
+        ],
+        'sharing_title' => '4. Recipients, processors, and transfers',
+        'sharing_items' => [
+            'We only share data with parties necessary for providing the service, such as hosting providers.',
+            'When reCAPTCHA is used (for guest support messages), verification data is shared with Google.',
+            'Support messages may be viewed by authorized Jayro administrators to handle requests.',
+            'Where required, we sign data processing agreements with processors.',
+            'Transfers outside the EEA are only made with appropriate safeguards, such as Standard Contractual Clauses (where applicable).',
+        ],
+        'retention_title' => '5. Retention periods',
+        'retention_items' => [
+            'Account and task data: as long as your account is active.',
+            'When an account is deleted, related account data is deleted according to configured database relationships.',
+            'Support messages and security-relevant metadata are kept no longer than necessary for handling, security, and legal obligations.',
+        ],
+        'rights_title' => '6. Your privacy rights',
+        'rights_text_1' => 'You have the right of access, rectification, deletion, restriction, data portability, and objection. Requests can be submitted via :email or through the support form. We generally respond within 1 month.',
+        'rights_text_2' => 'You also have the right to lodge a complaint with the Dutch Data Protection Authority.',
+        'security_title' => '7. Security',
+        'security_text' => 'We take appropriate technical and organizational measures to protect personal data against loss, unauthorized access, and misuse.',
+        'changes_title' => '8. Changes',
+        'changes_text' => 'We may update this privacy statement. The most recent version is always available on this page.',
+    ],
+];

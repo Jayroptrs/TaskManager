@@ -7,7 +7,7 @@ label {
     height: calc(var(--spacing) * 10);
     width: 100%;
     border-width: 1px;
-    border-color: var(--color-border);
+    border-color: color-mix(in srgb, var(--color-border) 88%, white 12%);
     padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3);
     background-color: var(--color-card);
     color: var(--color-foreground);
@@ -17,14 +17,17 @@ label {
 }
 
 .input:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+    border-color: color-mix(in srgb, var(--color-primary) 52%, var(--color-border));
 }
 
-.input-neon-select {
+select.input-neon-select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+    cursor: pointer;
     padding-right: calc(var(--spacing) * 10);
+    border-color: color-mix(in srgb, var(--color-border) 88%, white 12%);
+    background-color: color-mix(in srgb, var(--color-card) 88%, transparent);
     background-image:
         linear-gradient(45deg, transparent 50%, var(--color-primary) 50%),
         linear-gradient(135deg, var(--color-primary) 50%, transparent 50%);
@@ -33,23 +36,38 @@ label {
         calc(100% - 12px) calc(50% - 2px);
     background-size: 6px 6px, 6px 6px;
     background-repeat: no-repeat;
-    transition: border-color 180ms ease, box-shadow 220ms ease, transform 180ms ease;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+    transition: border-color 180ms ease, box-shadow 220ms ease;
 }
 
-.input-neon-select:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 65%, var(--color-border));
-    transform: translateY(-1px);
+select.input-neon-select:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 62%, var(--color-border));
     box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--color-primary) 45%, transparent),
-        0 10px 22px color-mix(in srgb, var(--color-primary) 35%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--color-primary) 36%, transparent),
+        0 8px 18px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
-.input-neon-select:focus-visible {
+select.input-neon-select:focus,
+select.input-neon-select:focus-visible {
     outline: 0;
+    border-color: color-mix(in srgb, var(--color-primary) 72%, var(--color-border));
     box-shadow:
         0 0 0 calc(var(--spacing) * .5) var(--color-background),
         0 0 0 calc(var(--spacing) * 1) var(--color-primary),
-        0 0 24px color-mix(in srgb, var(--color-primary) 60%, transparent);
+        0 0 24px color-mix(in srgb, var(--color-primary) 52%, transparent);
+}
+
+select.input-neon-select option {
+    background: var(--color-card);
+    color: var(--color-foreground);
+}
+
+.assignee-select {
+    border-width: 1px;
+    border-color: color-mix(in srgb, var(--color-border) 88%, white 12%);
+    background-color: color-mix(in srgb, var(--color-card) 92%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
 }
 
 .dropdown-panel {
@@ -93,11 +111,13 @@ label {
     color: var(--color-muted-foreground);
 }
 
+.input:focus,
 .input:focus-visible {
     outline: 0;
+    border-color: color-mix(in srgb, var(--color-primary) 78%, var(--color-border));
     box-shadow:
         0 0 0 calc(var(--spacing) * .5) var(--color-background),
-        0 0 0 calc(var(--spacing) * 1) var(--color-primary);
+        0 0 0 calc(var(--spacing) * 1.1) var(--color-primary);
 }
 
 @media (min-width: var(--breakpoint-md)) {
@@ -111,7 +131,7 @@ label {
     height: calc(var(--spacing) * 40);
     width: 100%;
     border-width: 1px;
-    border-color: var(--color-border);
+    border-color: color-mix(in srgb, var(--color-border) 88%, white 12%);
     padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3);
     background-color: var(--color-card);
     color: var(--color-foreground);
@@ -121,18 +141,32 @@ label {
 }
 
 .textarea:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+    border-color: color-mix(in srgb, var(--color-primary) 52%, var(--color-border));
 }
 
 .textarea::placeholder {
     color: var(--color-muted-foreground);
 }
 
+.textarea:focus,
 .textarea:focus-visible {
     outline: 0;
+    border-color: color-mix(in srgb, var(--color-primary) 78%, var(--color-border));
     box-shadow:
         0 0 0 calc(var(--spacing) * .5) var(--color-background),
-        0 0 0 calc(var(--spacing) * 1) var(--color-primary);
+        0 0 0 calc(var(--spacing) * 1.1) var(--color-primary);
+}
+
+.form-control:not(:focus):not(:focus-visible):not(:placeholder-shown):not([type='date']),
+textarea.form-control:not(:focus):not(:focus-visible):not(:placeholder-shown),
+select.form-control.is-filled:not(:focus):not(:focus-visible) {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 1px color-mix(in srgb, #22c55e 35%, transparent);
+}
+
+input[type='date'].form-control.is-filled:not(:focus):not(:focus-visible) {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 1px color-mix(in srgb, #22c55e 35%, transparent);
 }
 
 .label {
@@ -151,7 +185,10 @@ input[type=file] {
 input[type=file]::file-selector-button {
     margin-right: calc(var(--spacing) * 4);
     padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4);
-    border-radius: calc(var(--spacing) * 2);
+    border-top-left-radius: calc(var(--spacing) * 2);
+    border-bottom-left-radius: calc(var(--spacing) * 2);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
     border-width: 0;
     font-size: 0.875rem;
     line-height: 1.25rem;
@@ -176,3 +213,4 @@ input[type=file]::file-selector-button:hover {
 .form-muted-icon:hover {
     color: var(--color-foreground);
 }
+

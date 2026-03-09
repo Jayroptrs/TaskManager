@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'login_title' => 'Login',
+    'login_description' => 'Great to see you!',
+    'register_title' => 'Create an account',
+    'register_description' => 'Start tracking your tasks today!',
+    'name' => 'Name',
+    'name_placeholder' => 'Name..',
+    'email' => 'Email',
+    'email_placeholder' => 'Email..',
+    'password' => 'Password',
+    'password_placeholder' => 'Password..',
+    'password_confirmation' => 'Confirm password',
+    'password_confirmation_placeholder' => 'Repeat password..',
+    'login_help' => 'Having trouble logging in?',
+    'login_help_link' => 'Contact support',
+    'register_help' => 'Having trouble registering?',
+    'register_help_link' => 'Contact support',
+    'no_account' => 'No account yet?',
+    'have_account' => 'Already have an account?',
+    'invalid_credentials' => 'The login credentials are incorrect.',
+    'login_button' => 'Login',
+    'register_button' => 'Register',
+];

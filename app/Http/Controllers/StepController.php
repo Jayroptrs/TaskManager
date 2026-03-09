@@ -11,7 +11,12 @@ class StepController extends Controller
     {
         Gate::authorize('workWith', $step->task);
 
-        $step->update(['completed' => ! $step->completed]);
+        $completed = ! $step->completed;
+        $step->update(['completed' => $completed]);
+        $step->task->recordActivity('step_toggled', auth()->id(), [
+            'step' => $step->description,
+            'completed' => $completed,
+        ]);
 
         return back();
     }

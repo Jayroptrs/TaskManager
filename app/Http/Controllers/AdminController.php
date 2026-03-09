@@ -22,10 +22,18 @@ class AdminController extends Controller
             ->take(8)
             ->get(['id', 'name', 'email', 'created_at']);
 
-        $supportMessages = SupportMessage::query()
+        $memberSupportMessages = SupportMessage::query()
+            ->whereNotNull('user_id')
             ->with('user:id,name,email')
             ->latest()
-            ->paginate(15);
+            ->take(40)
+            ->get();
+
+        $guestSupportMessages = SupportMessage::query()
+            ->whereNull('user_id')
+            ->latest()
+            ->take(40)
+            ->get();
 
         return view('admin.index', [
             'totalUsers' => $totalUsers,
@@ -34,7 +42,8 @@ class AdminController extends Controller
             'openSupportCount' => $openSupportCount,
             'resolvedSupportCount' => $resolvedSupportCount,
             'recentUsers' => $recentUsers,
-            'supportMessages' => $supportMessages,
+            'memberSupportMessages' => $memberSupportMessages,
+            'guestSupportMessages' => $guestSupportMessages,
         ]);
     }
 
@@ -65,5 +74,19 @@ class AdminController extends Controller
         $user->delete();
 
         return back()->with('success', 'Gebruiker is verwijderd.');
+    }
+
+    public function userTasks(User $user)
+    {
+        $tasks = Task::query()
+            ->where('user_id', $user->id)
+            ->withCount('collaborators')
+            ->latest()
+            ->paginate(18);
+
+        return view('admin.user-tasks', [
+            'targetUser' => $user,
+            'tasks' => $tasks,
+        ]);
     }
 }

@@ -27,6 +27,10 @@ class TaskRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', Rule::enum(TaskStatus::class)],
+            'due_date' => ['nullable', 'date'],
+            'reminders_enabled' => ['nullable', 'boolean'],
+            'reminder_days' => ['nullable', 'array', 'min:1'],
+            'reminder_days.*' => ['integer', 'min:0', 'max:365'],
             'links' => ['nullable', 'array'],
             'links.*' => ['url', 'max:255'],
             'tags' => ['nullable', 'array'],
@@ -34,7 +38,9 @@ class TaskRequest extends FormRequest
             'steps' => ['nullable', 'array'],
             'steps.*.description' => ['string', 'max:255'],
             'steps.*.completed' => ['boolean'],
+            'steps.*.assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'image' => ['nullable', 'image', 'max:5120'],
+            'invite_emails' => ['nullable', 'string', 'max:2000'],
         ];
     }
 }

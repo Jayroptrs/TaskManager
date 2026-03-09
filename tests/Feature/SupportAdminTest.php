@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Task;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 test('guest can submit support form for login issues', function () {
     $this->post(route('support.store'), [
@@ -98,6 +100,25 @@ test('admin can delete a non admin user', function () {
     $this->assertDatabaseMissing('users', ['id' => $user->id]);
 });
 
+test('admin deleting a user also removes that users task images from storage', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create(['email' => 'remove-images@example.com']);
+    $imagePath = 'ideas/admin-delete-user-task.jpg';
+    Storage::disk('public')->put($imagePath, 'task-image');
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'image_path' => $imagePath,
+    ]);
+
+    $this->actingAs($admin)
+        ->delete(route('admin.users.destroy', $user))
+        ->assertRedirect();
+
+    $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    Storage::disk('public')->assertMissing($imagePath);
+});
+
 test('admin cannot delete own account via admin panel', function () {
     $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
 
@@ -118,4 +139,27 @@ test('admin cannot delete another admin account', function () {
         ->assertSessionHasErrors('admin');
 
     $this->assertDatabaseHas('users', ['id' => $otherAdmin->id]);
+});
+
+test('admin can view tasks page for a user', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create(['name' => 'Doel Gebruiker']);
+    Task::factory()->create(['user_id' => $user->id, 'title' => 'Taak voor admin']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $user))
+        ->assertOk()
+        ->assertSee('Doel Gebruiker')
+        ->assertSee('Taak voor admin');
+});
+
+test('admin can open task detail of another user in read mode', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create();
+    $task = Task::factory()->create(['user_id' => $user->id, 'title' => 'Admin read taak']);
+
+    $this->actingAs($admin)
+        ->get(route('task.show', $task))
+        ->assertOk()
+        ->assertSee('Admin read taak');
 });

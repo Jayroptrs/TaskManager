@@ -60,5 +60,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('admin-actions', fn (Request $request) => [
             Limit::perMinute(30)->by('admin:'.$request->user()?->id),
         ]);
+
+        RateLimiter::for('collaboration-actions', fn (Request $request) => [
+            Limit::perMinute(20)->by('collab:'.($request->user()?->id ?? $request->ip())),
+        ]);
     }
 }

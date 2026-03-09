@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecurityHeaders
@@ -27,14 +28,40 @@ class SecurityHeaders
         }
 
         if (app()->environment('local')) {
+            $viteOrigins = collect([
+                'http://127.0.0.1:5173',
+                'http://localhost:5173',
+            ]);
+
+            $hotFile = public_path('hot');
+            if (is_file($hotFile)) {
+                $hotUrl = trim((string) @file_get_contents($hotFile));
+                if ($hotUrl !== '') {
+                    $viteOrigins->push(rtrim($hotUrl, '/'));
+                }
+            }
+
+            $viteOrigins = $viteOrigins->filter()->unique()->values();
+            $viteHttp = $viteOrigins->implode(' ');
+            $viteWs = $viteOrigins
+                ->map(function (string $origin) {
+                    if (Str::startsWith($origin, 'https://')) {
+                        return 'wss://'.Str::after($origin, 'https://');
+                    }
+
+                    return 'ws://'.Str::after($origin, 'http://');
+                })
+                ->unique()
+                ->implode(' ');
+
             $response->headers->set(
                 'Content-Security-Policy',
-                "default-src 'self' http://127.0.0.1:5173 http://localhost:5173 ws://127.0.0.1:5173 ws://localhost:5173; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' http://127.0.0.1:5173 http://localhost:5173; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5173 http://localhost:5173; font-src 'self' data: http://127.0.0.1:5173 http://localhost:5173; connect-src 'self' ws://127.0.0.1:5173 ws://localhost:5173 http://127.0.0.1:5173 http://localhost:5173; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+                "default-src 'self' {$viteHttp} {$viteWs}; img-src 'self' data: blob: https://www.google.com https://www.gstatic.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' {$viteHttp}; script-src 'self' 'unsafe-inline' 'unsafe-eval' {$viteHttp} https://www.google.com https://www.gstatic.com https://www.recaptcha.net; font-src 'self' data: {$viteHttp}; connect-src 'self' {$viteWs} {$viteHttp} https://www.google.com https://www.gstatic.com https://www.recaptcha.net; frame-src 'self' https://www.google.com https://www.recaptcha.net; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
             );
         } else {
             $response->headers->set(
                 'Content-Security-Policy',
-                "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+                "default-src 'self'; img-src 'self' data: blob: https://www.google.com https://www.gstatic.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.recaptcha.net; font-src 'self' data:; connect-src 'self' https://www.google.com https://www.gstatic.com https://www.recaptcha.net; frame-src 'self' https://www.google.com https://www.recaptcha.net; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
             );
         }
 

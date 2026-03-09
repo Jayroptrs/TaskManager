@@ -14,20 +14,20 @@ class SessionsController extends Controller
 
     public function store(Request $request)
     {
-        $attributes = $request->validate([
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'max:255'],
-        ]);
+        $attributes = [
+            'email' => trim((string) $request->input('email')),
+            'password' => (string) $request->input('password'),
+        ];
 
         if (!Auth::attempt($attributes)) {
             return back()
-                ->withErrors(['password' => 'Ongeldige inloggegevens.'])
-                ->withInput();
+                ->withErrors(['password' => __('auth.invalid_credentials')])
+                ->withInput($request->only('email'));
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended('/')->with('success', 'Je bent succesvol ingelogd!');
+        return redirect()->intended('/')->with('success', __('messages.login_success'));
     }
 
     public function destroy(Request $request)
