@@ -59,6 +59,15 @@
             </form>
         @endif
 
+        <section class="mt-6 space-y-4 rounded-2xl border border-border/80 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_97%,white_3%),color-mix(in_srgb,var(--color-input)_16%,var(--color-card)))] p-4 sm:p-5 shadow-[0_12px_28px_color-mix(in_srgb,black_8%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
+            <h2 class="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-muted-foreground shadow-[0_0_12px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">{{ __('profile.onboarding_section') }}</h2>
+            <p class="text-sm text-muted-foreground">{{ __('profile.onboarding_description') }}</p>
+            <form action="{{ route('onboarding.reset') }}" method="POST" class="flex justify-end">
+                @csrf
+                <button type="submit" class="btn btn-outlined h-10">{{ __('profile.onboarding_reset') }}</button>
+            </form>
+        </section>
+
         <section class="mt-6 space-y-4 rounded-2xl border border-red-500/30 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_97%,white_3%),color-mix(in_srgb,#ef4444_12%,var(--color-card)))] p-4 sm:p-5 shadow-[0_12px_28px_color-mix(in_srgb,black_8%,transparent)]">
             <h2 class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-card/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-400">{{ __('profile.delete_section') }}</h2>
             <p class="text-sm text-muted-foreground">{{ __('profile.delete_description') }}</p>

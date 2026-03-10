@@ -34,6 +34,7 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar_path',
+        'onboarding_completed_at',
     ];
 
     /**
@@ -57,6 +58,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'onboarding_completed_at' => 'datetime',
         ];
     }
 
@@ -143,6 +145,19 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return (bool) ($this->attributes['is_admin'] ?? false);
+    }
+
+    public function hasCompletedOnboarding(): bool
+    {
+        if (array_key_exists('onboarding_completed_at', $this->attributes)) {
+            return $this->attributes['onboarding_completed_at'] !== null;
+        }
+
+        // Fallback for partially-loaded user models used in tests/guards.
+        return $this->newQuery()
+            ->whereKey($this->getKey())
+            ->whereNotNull('onboarding_completed_at')
+            ->exists();
     }
 
     public function avatarUrl(): string
