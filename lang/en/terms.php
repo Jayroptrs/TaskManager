@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Terms and conditions',
-    'version' => 'Version: 1.2 - Last updated: 26-02-2026.',
+    'version' => 'Version: 1.3 - Last updated: 10-03-2026.',
     'sections' => [
         'identity_title' => '1. Provider identity',
         'service_name' => 'Service name:',
@@ -20,14 +20,16 @@ return [
             'You may not use the service for unlawful or harmful purposes.',
             'You may not post content that infringes third-party rights.',
             'As a task owner, you are responsible for who you invite as collaborators.',
+            'Task invite links are intended for the target recipients; you are responsible for sharing them securely.',
             'Collaborators may only act within shared tasks and may not bypass security or permissions.',
+            'Mentioning users in comments is only allowed for work-related communication within the task context.',
         ],
         'availability_title' => '4. Availability and maintenance',
-        'availability_text' => 'Jayro is provided as an online service. We aim for continuity but cannot guarantee 100% uninterrupted availability. Maintenance may temporarily affect accessibility.',
+        'availability_text' => 'Jayro is provided as an online service. We aim for continuity but cannot guarantee 100% uninterrupted availability. Maintenance may temporarily affect accessibility. Notifications and deadline reminders are delivered on a best-effort basis.',
         'ip_title' => '5. Intellectual property',
         'ip_text' => 'All rights to software, brand, design, and documentation of Jayro remain with the provider. You only receive a limited, non-transferable right of use.',
         'liability_title' => '6. Liability',
-        'liability_text' => 'To the extent permitted by law, liability is limited to direct damages and to the amount paid for the service in the 12 months preceding the damage (or EUR 0 if use is free), unless there is intent or willful recklessness.',
+        'liability_text' => 'To the extent permitted by law, liability is limited to direct damages and to the amount paid for the service in the 12 months preceding the damage (or EUR 0 if use is free), unless there is intent or willful recklessness. Users remain responsible for timely follow-up on tasks, deadlines, and reminders.',
         'termination_title' => '7. Termination',
         'termination_text' => 'We may block or terminate access in case of misuse, breach of these terms, or where necessary for safety and legal compliance.',
         'law_title' => '8. Governing law and disputes',

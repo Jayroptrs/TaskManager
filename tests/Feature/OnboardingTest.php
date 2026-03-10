@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 test('new user sees onboarding modal in app layout', function () {
     $user = User::factory()->create([
@@ -59,4 +60,57 @@ test('authenticated user can reset onboarding from profile flow', function () {
 test('guest cannot reset onboarding endpoint', function () {
     $this->post(route('onboarding.reset'))
         ->assertRedirect(route('login'));
+});
+
+test('onboarding modal includes dashboard step copy for new users', function () {
+    $user = User::factory()->create([
+        'onboarding_completed_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee(__('ui.onboarding_step_2_title'))
+        ->assertSee('samenwerktaken en voortgang.');
+});
+
+test('completing onboarding twice keeps first completion timestamp', function () {
+    Carbon::setTestNow('2026-03-10 10:00:00');
+
+    $user = User::factory()->create([
+        'onboarding_completed_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('onboarding.complete'))
+        ->assertOk();
+
+    $firstCompletion = $user->fresh()->onboarding_completed_at;
+    expect($firstCompletion)->not()->toBeNull();
+
+    Carbon::setTestNow('2026-03-10 12:00:00');
+
+    $this->actingAs($user)
+        ->postJson(route('onboarding.complete'))
+        ->assertOk();
+
+    $secondCompletion = $user->fresh()->onboarding_completed_at;
+    expect($secondCompletion?->toDateTimeString())->toBe($firstCompletion?->toDateTimeString());
+
+    Carbon::setTestNow();
+});
+
+test('resetting onboarding shows modal again on next page load', function () {
+    $user = User::factory()->create([
+        'onboarding_completed_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('onboarding.reset'))
+        ->assertRedirect();
+
+    $this->actingAs($user)
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee('data-onboarding-modal', false);
 });

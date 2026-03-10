@@ -51,6 +51,9 @@
             $unreadDueDateReminders = auth()->check()
                 ? auth()->user()->unreadTaskDueDateReminders()->with(['task:id,title'])->latest()->take(6)->get()
                 : collect();
+            $unreadSupportReplies = auth()->check()
+                ? auth()->user()->unreadSupportReplies()->with(['supportMessage:id,user_id,subject', 'user:id,name'])->latest()->take(6)->get()
+                : collect();
             $pendingCollabCount = auth()->check()
                 ? auth()->user()->incomingCollaborationRequests()->pending()->count()
                 : 0;
@@ -60,7 +63,10 @@
             $unreadReminderCount = auth()->check()
                 ? auth()->user()->unreadTaskDueDateReminders()->count()
                 : 0;
-            $inboxCount = $pendingCollabCount + $unreadMentionCount + $unreadReminderCount;
+            $unreadSupportReplyCount = auth()->check()
+                ? auth()->user()->unreadSupportReplies()->count()
+                : 0;
+            $inboxCount = $pendingCollabCount + $unreadMentionCount + $unreadReminderCount + $unreadSupportReplyCount;
         @endphp
         <div class="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 transition-all duration-200" :class="scrolledCompact ? 'md:hidden' : ''">
             <a href="/" class="{{ $brandClass }}" aria-label="Jayro Home">Jayro</a>
@@ -199,7 +205,7 @@
                     >
                         <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ __('ui.inbox') }}</p>
 
-                        @if ($pendingCollabRequests->isEmpty() && $unreadMentionNotifications->isEmpty() && $unreadDueDateReminders->isEmpty())
+                        @if ($pendingCollabRequests->isEmpty() && $unreadMentionNotifications->isEmpty() && $unreadDueDateReminders->isEmpty() && $unreadSupportReplies->isEmpty())
                             <p class="text-sm text-muted-foreground">{{ __('ui.no_messages') }}</p>
                         @endif
 
@@ -251,6 +257,22 @@
                                     >
                                         <p class="text-xs text-foreground/90">{{ __('ui.reminder_due_on', ['date' => $reminder->due_date->translatedFormat('j M Y')]) }}</p>
                                         <p class="mt-0.5 text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $reminder->task->title]) }}</p>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if ($unreadSupportReplies->isNotEmpty())
+                            <p class="mb-2 mt-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ __('ui.support_updates') }}</p>
+                            <div class="space-y-2">
+                                @foreach ($unreadSupportReplies as $reply)
+                                    <a
+                                        href="{{ route('inbox.support.open', $reply) }}"
+                                        class="no-link-hover block rounded-lg border border-border/70 bg-card/70 p-2.5 transition-colors hover:border-primary/45"
+                                    >
+                                        <p class="text-xs text-foreground/90">{{ __('ui.support_reply_from', ['name' => $reply->user?->name ?? __('support.support_team')]) }}</p>
+                                        <p class="mt-0.5 text-xs text-muted-foreground">{{ __('ui.support_ticket_subject', ['subject' => $reply->supportMessage?->subject ?? '-']) }}</p>
+                                        <p class="mt-1 text-xs text-muted-foreground">{{ \Illuminate\Support\Str::limit($reply->message ?? '', 90) }}</p>
                                     </a>
                                 @endforeach
                             </div>
@@ -460,7 +482,7 @@
 
             <div class="mt-4 rounded-xl border border-border/80 bg-card/75 p-3">
                 <p class="mb-2 text-xs uppercase tracking-[0.08em] text-muted-foreground">{{ __('ui.inbox') }}</p>
-                @if ($pendingCollabRequests->isEmpty() && $unreadMentionNotifications->isEmpty() && $unreadDueDateReminders->isEmpty())
+                @if ($pendingCollabRequests->isEmpty() && $unreadMentionNotifications->isEmpty() && $unreadDueDateReminders->isEmpty() && $unreadSupportReplies->isEmpty())
                     <p class="text-sm text-muted-foreground">{{ __('ui.no_messages') }}</p>
                 @endif
 
@@ -514,6 +536,23 @@
                             >
                                 <p class="text-xs text-foreground/90">{{ __('ui.reminder_due_on', ['date' => $reminder->due_date->translatedFormat('j M Y')]) }}</p>
                                 <p class="mt-0.5 text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $reminder->task->title]) }}</p>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($unreadSupportReplies->isNotEmpty())
+                    <p class="mb-2 mt-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ __('ui.support_updates') }}</p>
+                    <div class="space-y-2">
+                        @foreach ($unreadSupportReplies as $reply)
+                            <a
+                                href="{{ route('inbox.support.open', $reply) }}"
+                                @click="mobileMenuOpen = false"
+                                class="no-link-hover block rounded-lg border border-border/70 bg-card/70 p-2.5 transition-colors hover:border-primary/45"
+                            >
+                                <p class="text-xs text-foreground/90">{{ __('ui.support_reply_from', ['name' => $reply->user?->name ?? __('support.support_team')]) }}</p>
+                                <p class="mt-0.5 text-xs text-muted-foreground">{{ __('ui.support_ticket_subject', ['subject' => $reply->supportMessage?->subject ?? '-']) }}</p>
+                                <p class="mt-1 text-xs text-muted-foreground">{{ \Illuminate\Support\Str::limit($reply->message ?? '', 90) }}</p>
                             </a>
                         @endforeach
                     </div>

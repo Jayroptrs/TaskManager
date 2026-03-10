@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\CarbonInterface;
 use App\Actions\CreateTask;
 use App\Actions\UpdateTask;
 use App\Http\Requests\TaskRequest;
@@ -9,6 +10,7 @@ use App\Models\Task;
 use App\Models\TaskCollaborationRequest;
 use App\Models\User;
 use App\TaskStatus;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +23,11 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $view = $request->query('view') === 'board' || $request->query('view') === 'bord' ? 'board' : 'list';
+        $view = match ((string) $request->query('view', 'list')) {
+            'board', 'bord' => 'board',
+            'calendar', 'kalender' => 'calendar',
+            default => 'list',
+        };
         $search = trim((string) $request->query('q', ''));
         $sort = in_array($request->query('sort'), ['newest', 'oldest', 'deadline_soon', 'deadline_late'], true)
             ? $request->query('sort')
@@ -109,6 +115,29 @@ class TaskController extends Controller
                 ->values()
             : collect();
 
+        $calendarMonth = null;
+        $calendarDays = collect();
+        $tasksByDueDate = collect();
+        $calendarMonthTaskCount = 0;
+
+        if ($view === 'calendar') {
+            $calendarMonth = $this->resolveCalendarMonth((string) $request->query('month', ''));
+            $calendarGridStart = $calendarMonth->copy()->startOfWeek(CarbonInterface::MONDAY);
+            $calendarGridEnd = $calendarMonth->copy()->endOfMonth()->endOfWeek(CarbonInterface::SUNDAY);
+
+            for ($cursor = $calendarGridStart->copy(); $cursor->lte($calendarGridEnd); $cursor->addDay()) {
+                $calendarDays->push($cursor->copy());
+            }
+
+            $tasksByDueDate = $tasks
+                ->filter(fn (Task $task) => $task->due_date !== null)
+                ->groupBy(fn (Task $task) => $task->due_date->toDateString());
+
+            $calendarMonthTaskCount = $tasks
+                ->filter(fn (Task $task) => $task->due_date?->isSameMonth($calendarMonth))
+                ->count();
+        }
+
         return view('task.index', [
             'tasks' => $tasks,
             'selectedView' => $view,
@@ -118,6 +147,10 @@ class TaskController extends Controller
             'selectedTag' => $selectedTag,
             'statusCounts' => Task::statusCounts($user),
             'availableTags' => $availableTags,
+            'calendarMonth' => $calendarMonth,
+            'calendarDays' => $calendarDays,
+            'tasksByDueDate' => $tasksByDueDate,
+            'calendarMonthTaskCount' => $calendarMonthTaskCount,
         ]);
     }
 
@@ -313,5 +346,18 @@ class TaskController extends Controller
                     ]);
                 }
             });
+    }
+
+    private function resolveCalendarMonth(string $month): Carbon
+    {
+        if (! preg_match('/^\d{4}-\d{2}$/', $month)) {
+            return now()->startOfMonth();
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        } catch (\Throwable) {
+            return now()->startOfMonth();
+        }
     }
 }

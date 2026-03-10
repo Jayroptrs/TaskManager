@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Privacy statement (GDPR)',
-    'version' => 'Version: 1.2 - Last updated: 26-02-2026.',
+    'version' => 'Version: 1.3 - Last updated: 10-03-2026.',
     'sections' => [
         'controller_title' => '1. Who is the data controller?',
         'service' => 'Service:',
@@ -13,8 +13,10 @@ return [
         'data_title' => '2. Which personal data do we process?',
         'data_items' => [
             'Account data: name, email address, and hashed passwords.',
-            'User content: tasks, subtasks/checklist items, comments, tags, links, and optional images.',
-            'Collaboration data: invitations, roles (owner/collaborator), and checklist step assignments.',
+            'Profile data: profile photo (if uploaded) and account preferences such as language, accent color, and onboarding status.',
+            'User content: tasks, subtasks/checklist items, comments, tags, links, deadlines, reminder settings, and uploaded files/images.',
+            'Collaboration data: invitations, roles (owner/collaborator), comment mentions, and checklist step assignments.',
+            'Notification data: inbox notifications for invitations, mentions, comments, and deadline reminders.',
             'Technical data: IP address, user agent, and session information for security and operation.',
             'Communication data: messages you send to support.',
         ],
@@ -28,6 +30,7 @@ return [
         'sharing_title' => '4. Recipients, processors, and transfers',
         'sharing_items' => [
             'We only share data with parties necessary for providing the service, such as hosting providers.',
+            'Tasks, comments, attachments, and notifications within a task are visible to the owner and invited team members of that task.',
             'When reCAPTCHA is used (for guest support messages), verification data is shared with Google.',
             'Support messages may be viewed by authorized Jayro administrators to handle requests.',
             'Where required, we sign data processing agreements with processors.',
@@ -37,6 +40,7 @@ return [
         'retention_items' => [
             'Account and task data: as long as your account is active.',
             'When an account is deleted, related account data is deleted according to configured database relationships.',
+            'Deleted profile images and task files are removed from storage and are not retained as active files.',
             'Support messages and security-relevant metadata are kept no longer than necessary for handling, security, and legal obligations.',
         ],
         'rights_title' => '6. Your privacy rights',

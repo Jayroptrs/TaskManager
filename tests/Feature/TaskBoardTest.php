@@ -16,6 +16,77 @@ test('authenticated user can open task board index', function () {
         ->assertSee(__('ui.tasks'));
 });
 
+test('user can open calendar view and see tasks grouped by due date', function () {
+    $user = User::factory()->create();
+    $month = now()->startOfMonth();
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Kalender taak deze maand',
+        'due_date' => $month->copy()->addDays(5)->toDateString(),
+    ]);
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Kalender taak buiten maand',
+        'due_date' => $month->copy()->addMonthNoOverflow()->startOfMonth()->addDays(10)->toDateString(),
+    ]);
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Taak zonder deadline',
+        'due_date' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('task.index', ['view' => 'calendar', 'month' => $month->format('Y-m')]))
+        ->assertOk()
+        ->assertSee(__('task.view_calendar'))
+        ->assertSee('Kalender taak deze maand')
+        ->assertDontSee('Kalender taak buiten maand')
+        ->assertDontSee('Taak zonder deadline');
+});
+
+test('calendar view uses current month when invalid month query is provided', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->get(route('task.index', ['view' => 'calendar', 'month' => 'invalid-month']));
+
+    $response->assertOk()
+        ->assertViewHas('calendarMonth', fn ($month) => $month->format('Y-m') === now()->startOfMonth()->format('Y-m'));
+});
+
+test('calendar grid ends on sunday and has full weeks only', function () {
+    $user = User::factory()->create();
+    $month = '2026-03';
+
+    $response = $this->actingAs($user)
+        ->get(route('task.index', ['view' => 'calendar', 'month' => $month]));
+
+    $response->assertOk()
+        ->assertViewHas('calendarDays', function ($days) {
+            if ($days->isEmpty()) {
+                return false;
+            }
+
+            return $days->count() % 7 === 0
+                && $days->count() <= 42
+                && $days->last()->isSunday();
+        });
+});
+
+test('calendar view renders quick add trigger that opens create modal with selected due date', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('task.index', ['view' => 'calendar']))
+        ->assertOk()
+        ->assertSee('task-create-due-date-selected')
+        ->assertSee("\$dispatch('open-modal', 'create-task')", false)
+        ->assertSee('@task-create-due-date-selected.window="dueDate = $event.detail?.dueDate ?? dueDate"', false);
+});
+
 test('user can create a task and tags are normalized', function () {
     $user = User::factory()->create();
 

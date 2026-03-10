@@ -6,7 +6,7 @@ return [
     'how_title' => '1. Zo werkt support',
     'how_1' => 'Vul het supportformulier hieronder zo volledig mogelijk in (ook zonder account mogelijk).',
     'how_2' => 'Na verzenden wordt je bericht direct geregistreerd in ons supportoverzicht met noodzakelijke technische metadata (zoals IP-adres en user-agent).',
-    'how_3' => 'Ingelogde gebruikers zien recente berichten onder "Mijn recente berichten"; voor niet-ingelogde inzendingen kan reCAPTCHA-verificatie worden gebruikt.',
+    'how_3' => 'Ingelogde gebruikers zien recente berichten en ticketreacties onder "Mijn recente berichten"; voor niet-ingelogde inzendingen kan reCAPTCHA-verificatie worden gebruikt.',
     'time_title' => '2. Reactietijd en afhandeling',
     'time_1' => 'We behandelen supportverzoeken op werkdagen (ma-vr).',
     'time_2' => 'We hanteren streeftermijnen voor eerste reactie en inhoudelijke afhandeling.',
@@ -16,25 +16,51 @@ return [
     'faqs' => [
         [
             'q' => 'Hoe snel krijg ik antwoord op mijn supportverzoek?',
-            'a' => 'Op werkdagen reageren we doorgaans binnen 1-2 werkdagen. Bij complexere vragen kan dit langer duren.',
+            'a' => 'Op werkdagen reageren we meestal binnen 1-2 werkdagen. Urgente beveiligingsmeldingen pakken we sneller op zodra ze binnenkomen. Bij complexere technische vragen kan een inhoudelijke oplossing langer duren, maar we houden je tussentijds op de hoogte.',
         ],
         [
             'q' => 'Kan ik een supportbericht sturen zonder account?',
-            'a' => 'Ja, dat kan. Vul dan je naam en e-mailadres in het formulier in.',
+            'a' => 'Ja, dat kan. Vul dan je naam, e-mailadres en een duidelijke beschrijving van het probleem in. Houd er rekening mee dat je zonder account geen ticketgesprek in de app kunt volgen.',
         ],
         [
             'q' => 'Waar kan ik de status van mijn melding zien?',
-            'a' => 'Ingelogde gebruikers zien hun recente supportberichten op deze pagina onder "Mijn recente berichten".',
+            'a' => 'Ingelogde gebruikers zien hun recente supporttickets op deze pagina onder "Mijn recente berichten". Per ticket zie je de actuele status, reacties van support en de volledige gespreksgeschiedenis. Je kunt daar ook zelf extra informatie toevoegen.',
+        ],
+        [
+            'q' => 'Krijg ik als gast ook een reactie op mijn supportbericht in de app?',
+            'a' => 'Nee, niet in de app. Zonder account kun je wel een supportbericht insturen, maar ticketreacties en statusupdates zijn alleen zichtbaar voor ingelogde gebruikers. Voor volledige opvolging adviseren we daarom een account te gebruiken.',
+        ],
+        [
+            'q' => 'Hoe snel kan ik starten?',
+            'a' => 'Je kunt binnen enkele minuten starten: account aanmaken, eerste taak toevoegen en direct structuur aanbrengen. Daarna kun je meteen deadlines en herinneringen instellen. Ook kun je direct wisselen tussen lijst-, bord- en kalenderweergave.',
+        ],
+        [
+            'q' => 'Voor wie is Jayro bedoeld?',
+            'a' => 'Jayro is geschikt voor freelancers, teams en kleinere organisaties die werk overzichtelijk willen plannen. Het is vooral handig als je taken, voortgang en samenwerking op een centrale plek wilt houden. Zo voorkom je losse lijstjes en versnipperde communicatie.',
+        ],
+        [
+            'q' => 'Wat maakt Jayro anders dan een simpele to-do app?',
+            'a' => 'Jayro gaat verder dan een losse checklist. Je combineert taken met samenwerking, reacties, mentions, deadlines, reminders en meerdere weergaven in een workflow. Daardoor beheer je niet alleen wat je doet, maar ook met wie, wanneer en met welke context.',
+        ],
+        [
+            'q' => 'Waarom kiezen teams voor Jayro?',
+            'a' => 'Teams kiezen Jayro omdat planning, communicatie en opvolging van werk samenkomen op een plek. Dit verkleint de kans op gemiste updates en onduidelijke verantwoordelijkheden. Iedereen ziet sneller wat de volgende stap is en wie aan zet is.',
+        ],
+        [
+            'q' => 'Kan ik de tool aanpassen aan mijn manier van werken?',
+            'a' => 'Ja. Je kunt onder andere weergaven, filters en statusgebruik afstemmen op je eigen workflow. Daarnaast kun je persoonlijke voorkeuren zoals taal en accentkleur aanpassen, zodat de omgeving beter bij je team past.',
         ],
         [
             'q' => 'Welke informatie moet ik meesturen bij een bug?',
-            'a' => 'Beschrijf wat je deed, wat je verwachtte, wat er gebeurde en voeg bij voorkeur foutmeldingen of stappen toe om het probleem te reproduceren.',
+            'a' => 'Beschrijf bij voorkeur de exacte stappen die je hebt uitgevoerd, wat je verwachtte en wat er echt gebeurde. Voeg waar mogelijk een foutmelding, screenshot of korte repro toe. Vermeld ook apparaat, browser en tijdstip, zodat we het probleem sneller kunnen reproduceren.',
         ],
         [
             'q' => 'Kan ik meerdere updates sturen over hetzelfde probleem?',
-            'a' => 'Ja. Gebruik bij voorkeur hetzelfde onderwerp zodat we je bericht sneller kunnen koppelen aan je eerdere melding.',
+            'a' => 'Ja, graag zelfs als je nieuwe informatie hebt. Gebruik bij voorkeur hetzelfde onderwerp en verwijs naar je eerdere context. Zo blijft alles in een ticket gebundeld en kan support sneller en consistenter afhandelen.',
         ],
     ],
+    'faq_show_more' => 'Bekijk meer vragen',
+    'faq_show_less' => 'Toon minder vragen',
     'new_message' => 'Nieuw supportbericht',
     'name' => 'Naam',
     'name_placeholder' => 'Je naam',
@@ -51,6 +77,21 @@ return [
     'my_recent' => 'Mijn recente berichten',
     'resolved' => 'Afgehandeld',
     'open' => 'Open',
+    'status_label' => 'Status',
+    'statuses' => [
+        'open' => 'Open',
+        'in_progress' => 'In behandeling',
+        'waiting_for_user' => 'Wacht op reactie gebruiker',
+        'resolved' => 'Afgehandeld',
+    ],
+    'conversation' => 'Gesprek',
+    'you' => 'Jij',
+    'support_team' => 'Supportteam',
+    'reply_label' => 'Jouw reactie',
+    'reply_placeholder' => 'Voeg extra informatie toe over je probleem of vraag.',
+    'send_reply' => 'Verstuur reactie',
+    'awaiting_user_resolution' => 'Support heeft dit ticket als afgehandeld gemarkeerd. Bevestig hieronder als het probleem voor jou ook is opgelost.',
+    'mark_resolved' => 'Ook als afgehandeld markeren',
     'none_sent' => 'Je hebt nog geen supportberichten verzonden.',
     'login_to_view' => 'Log in om je eerdere supportberichten te bekijken.',
     'categories' => [
