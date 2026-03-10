@@ -51,14 +51,14 @@
         }"
         class="page-shell px-4 sm:px-6 lg:px-8"
     >
-        <section class="surface-card rounded-2xl bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_95%,transparent),color-mix(in_srgb,var(--color-input)_12%,var(--color-card)))] p-3">
+        <section class="surface-card rounded-2xl bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_95%,transparent),color-mix(in_srgb,var(--color-input)_12%,var(--color-card)))] p-3 sm:p-4">
             <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-5">
                 <div>
                     <h1 class="page-title">{{ __('task.page_title') }}</h1>
                     <p class="page-subtitle">{{ __('task.page_subtitle') }}</p>
                 </div>
 
-                <div class="flex flex-wrap items-center justify-end gap-2 sm:mt-0">
+                <div class="flex w-full flex-wrap items-center justify-start gap-2 sm:mt-0 sm:w-auto sm:justify-end">
                     <button
                         x-data
                         @click="$dispatch('open-modal', 'create-task')"
@@ -70,9 +70,9 @@
 
                     <div
                         x-data="{ active: @js($selectedView) }"
-                        class="ml-1"
+                        class="ml-0 w-full sm:ml-1 sm:w-auto"
                     >
-                        <div class="relative grid grid-cols-3 items-center rounded-full bg-card/75 p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)]">
+                        <div class="relative grid w-full grid-cols-3 items-center rounded-full bg-card/75 p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)] sm:w-auto">
                             <span
                                 class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-primary shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 ease-out will-change-transform"
                                 style="transform: translateX({{ $selectedView === 'board' ? '100%' : ($selectedView === 'calendar' ? '200%' : '0%') }});"
@@ -86,7 +86,7 @@
                                     active = 'list';
                                     setTimeout(() => { window.location.href = '{{ $listViewUrl }}'; }, 110);
                                 "
-                                class="no-link-hover relative z-10 min-w-18 rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors duration-150"
+                                class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
                                 :class="active === 'list' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
                             >
                                 {{ __('task.view_list') }}
@@ -98,7 +98,7 @@
                                     active = 'board';
                                     setTimeout(() => { window.location.href = '{{ $boardViewUrl }}'; }, 110);
                                 "
-                                class="no-link-hover relative z-10 min-w-18 rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors duration-150"
+                                class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
                                 :class="active === 'board' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
                             >
                                 {{ __('task.view_board') }}
@@ -110,7 +110,7 @@
                                     active = 'calendar';
                                     setTimeout(() => { window.location.href = '{{ $calendarViewUrl }}'; }, 110);
                                 "
-                                class="no-link-hover relative z-10 min-w-18 rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors duration-150"
+                                class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
                                 :class="active === 'calendar' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
                             >
                                 {{ __('task.view_calendar') }}
@@ -360,10 +360,19 @@
                                 </p>
                             </div>
 
-                            <div class="flex items-center gap-2">
-                                <a href="{{ $previousMonthUrl }}" class="btn btn-outlined h-8 px-3 text-xs">{{ __('task.calendar_previous_month') }}</a>
-                                <a href="{{ $currentMonthUrl }}" class="btn btn-outlined h-8 px-3 text-xs">{{ __('task.calendar_today') }}</a>
-                                <a href="{{ $nextMonthUrl }}" class="btn btn-outlined h-8 px-3 text-xs">{{ __('task.calendar_next_month') }}</a>
+                            <div class="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
+                                <a href="{{ $previousMonthUrl }}" class="btn btn-outlined h-8 px-2 text-xs sm:flex-none sm:px-3">
+                                    <span class="sm:hidden">&larr;</span>
+                                    <span class="hidden sm:inline">{{ __('task.calendar_previous_month') }}</span>
+                                </a>
+                                <a href="{{ $currentMonthUrl }}" class="btn btn-outlined h-8 px-2 text-xs sm:flex-none sm:px-3">
+                                    <span class="sm:hidden">{{ now()->format('j M') }}</span>
+                                    <span class="hidden sm:inline">{{ __('task.calendar_today') }}</span>
+                                </a>
+                                <a href="{{ $nextMonthUrl }}" class="btn btn-outlined h-8 px-2 text-xs sm:flex-none sm:px-3">
+                                    <span class="sm:hidden">&rarr;</span>
+                                    <span class="hidden sm:inline">{{ __('task.calendar_next_month') }}</span>
+                                </a>
                             </div>
                         </header>
 
@@ -375,25 +384,26 @@
                         @endif
 
                         <div class="mt-3">
-                            <div class="grid grid-cols-7 gap-2">
+                            <div class="grid grid-cols-7 gap-1.5 sm:gap-2">
                                 @foreach ($weekdays as $weekday)
-                                    <div class="rounded-lg border border-border/70 bg-card/70 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                                        {{ $weekday->translatedFormat('D') }}
+                                    <div class="rounded-lg border border-border/70 bg-card/70 py-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:py-1.5 sm:text-[11px]">
+                                        <span class="sm:hidden">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($weekday->translatedFormat('dd'), 0, 2)) }}</span>
+                                        <span class="hidden sm:inline">{{ $weekday->translatedFormat('D') }}</span>
                                     </div>
                                 @endforeach
                             </div>
 
-                            <div class="mt-2 grid grid-cols-7 gap-2">
+                            <div class="mt-2 grid grid-cols-7 gap-1.5 sm:gap-2">
                                 @foreach ($calendarDays as $day)
                                     @php
                                         $dayTasks = $tasksByDueDate->get($day->toDateString(), collect());
                                         $isCurrentMonth = $day->isSameMonth($calendarMonth);
                                         $isToday = $day->isSameDay(now());
                                     @endphp
-                                    <div class="group relative min-h-32 rounded-xl border p-2 transition-colors duration-150 {{ $isCurrentMonth ? 'border-border/80 bg-card/88' : 'border-border/50 bg-card/55' }} {{ $isToday ? 'shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_55%,transparent),0_0_14px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]' : '' }}">
+                                    <div class="group relative min-h-24 overflow-hidden rounded-xl border p-1.5 transition-colors duration-150 sm:min-h-32 sm:p-2 {{ $isCurrentMonth ? 'border-border/80 bg-card/88' : 'border-border/50 bg-card/55' }} {{ $isToday ? 'shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_55%,transparent),0_0_14px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]' : '' }}">
                                         <button
                                             type="button"
-                                            class="btn btn-outlined absolute right-1.5 top-1.5 z-10 inline-flex h-6 w-6 items-center justify-center rounded-md px-0 text-sm opacity-0 transition-all duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
+                                            class="btn btn-outlined absolute right-1 top-1 z-10 inline-flex h-5 w-5 items-center justify-center rounded-md px-0 text-xs opacity-100 transition-all duration-200 sm:right-1.5 sm:top-1.5 sm:h-6 sm:w-6 sm:text-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                                             aria-label="{{ __('task.calendar_add_task') }}"
                                             title="{{ __('task.calendar_add_task') }}"
                                             @click="
@@ -404,17 +414,31 @@
                                             +
                                         </button>
                                         <div class="flex items-center justify-between gap-1">
-                                            <span class="text-xs font-semibold {{ $isCurrentMonth ? 'text-foreground/90' : 'text-muted-foreground/70' }}">{{ $day->day }}</span>
+                                            <span class="text-[11px] font-semibold sm:text-xs {{ $isCurrentMonth ? 'text-foreground/90' : 'text-muted-foreground/70' }}">{{ $day->day }}</span>
                                             @if ($dayTasks->count() > 0)
                                                 <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-primary/85 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{{ $dayTasks->count() }}</span>
                                             @endif
                                         </div>
 
-                                        <div class="mt-2 space-y-1.5">
+                                        <div class="mt-1 space-y-1 sm:hidden">
+                                            @if ($dayTasks->count() > 0)
+                                                <p class="truncate rounded-md border border-border/60 bg-card/80 px-1.5 py-0.5 text-[10px] font-medium text-foreground/85">
+                                                    {{ $dayTasks->first()->title }}
+                                                </p>
+
+                                                @if ($dayTasks->count() > 1)
+                                                    <p class="px-0.5 text-[10px] font-medium text-muted-foreground">
+                                                        {{ __('task.calendar_more_tasks', ['count' => $dayTasks->count() - 1]) }}
+                                                    </p>
+                                                @endif
+                                            @endif
+                                        </div>
+
+                                        <div class="mt-2 hidden space-y-1.5 sm:block">
                                             @foreach ($dayTasks->take(3) as $task)
                                                 <a
                                                     href="{{ route('task.show', $task) }}"
-                                                    class="no-link-hover block rounded-md border border-border/70 bg-card/80 px-2 py-1 text-[11px] font-medium text-foreground/85 transition-colors duration-150 hover:border-primary/55 hover:bg-card"
+                                                    class="no-link-hover block rounded-md border border-border/70 bg-card/80 px-1.5 py-1 text-[10px] font-medium text-foreground/85 transition-colors duration-150 hover:border-primary/55 hover:bg-card sm:px-2 sm:text-[11px]"
                                                     title="{{ $task->title }}"
                                                 >
                                                     <span class="line-clamp-2">{{ $task->title }}</span>
@@ -691,4 +715,5 @@
         </script>
     @endif
 </x-layout>
+
 

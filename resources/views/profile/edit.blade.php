@@ -1,6 +1,12 @@
 <x-layout>
-    <x-form :title="__('profile.title')" :description="__('profile.description')" max-width="max-w-4xl" :back-href="route('task.index')">
-        <form action="/profile" method="POST" enctype="multipart/form-data" class="mt-6 space-y-6">
+    <div class="py-8 md:py-12 max-w-6xl mx-auto">
+        <a href="{{ route('task.index') }}" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary no-link-hover">
+            <span>&larr; {{ __('ui.back') }}</span>
+        </a>
+        <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ __('profile.title') }}</h1>
+        <p class="mt-2 text-sm text-muted-foreground">{{ __('profile.description') }}</p>
+
+        <form action="/profile" method="POST" enctype="multipart/form-data" class="mt-8 space-y-6">
             @csrf
             @method('PATCH')
             <div class="grid gap-6 lg:grid-cols-2">
@@ -59,35 +65,50 @@
             </form>
         @endif
 
-        <section class="mt-6 space-y-4 rounded-2xl border border-border/80 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_97%,white_3%),color-mix(in_srgb,var(--color-input)_16%,var(--color-card)))] p-4 sm:p-5 shadow-[0_12px_28px_color-mix(in_srgb,black_8%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
-            <h2 class="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-muted-foreground shadow-[0_0_12px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">{{ __('profile.onboarding_section') }}</h2>
-            <p class="text-sm text-muted-foreground">{{ __('profile.onboarding_description') }}</p>
-            <form action="{{ route('onboarding.reset') }}" method="POST" class="flex justify-end">
-                @csrf
-                <button type="submit" class="btn btn-outlined h-10">{{ __('profile.onboarding_reset') }}</button>
-            </form>
-        </section>
-
-        <section class="mt-6 space-y-4 rounded-2xl border border-red-500/30 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_97%,white_3%),color-mix(in_srgb,#ef4444_12%,var(--color-card)))] p-4 sm:p-5 shadow-[0_12px_28px_color-mix(in_srgb,black_8%,transparent)]">
-            <h2 class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-card/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-400">{{ __('profile.delete_section') }}</h2>
-            <p class="text-sm text-muted-foreground">{{ __('profile.delete_description') }}</p>
-
-            <form action="{{ route('profile.destroy') }}" method="POST" class="space-y-3">
-                @csrf
-                @method('DELETE')
-
-                <x-form.field
-                    :placeholder="__('profile.delete_password_placeholder')"
-                    :label="__('profile.delete_password')"
-                    name="current_password"
-                    type="password"
-                />
-                <x-form.error name="delete_account" />
-
-                <div class="flex justify-end">
-                    <button type="submit" class="btn btn-danger-outlined h-10">{{ __('profile.delete_account') }}</button>
+        <div class="mt-6 grid items-start gap-6 lg:grid-cols-2 lg:items-stretch">
+            <section class="space-y-4 rounded-2xl border border-border/80 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_97%,white_3%),color-mix(in_srgb,var(--color-input)_16%,var(--color-card)))] p-4 sm:p-5 shadow-[0_12px_28px_color-mix(in_srgb,black_8%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
+                <h2 class="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-muted-foreground shadow-[0_0_12px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">{{ __('profile.onboarding_section') }}</h2>
+                <p class="text-sm text-muted-foreground">{{ __('profile.onboarding_description') }}</p>
+                <div class="rounded-xl border border-border/70 bg-card/70 px-3 py-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ __('profile.onboarding_details_title') }}</p>
+                    <ul class="mt-2 space-y-2 text-sm text-foreground/90">
+                        <li class="flex items-start gap-2">
+                            <span class="mt-1 size-1.5 shrink-0 rounded-full bg-primary/80"></span>
+                            <span>{{ __('profile.onboarding_point_dashboard') }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="mt-1 size-1.5 shrink-0 rounded-full bg-primary/80"></span>
+                            <span>{{ __('profile.onboarding_point_tasks') }}</span>
+                        </li>
+                    </ul>
                 </div>
-            </form>
-        </section>
-    </x-form>
+                <form action="{{ route('onboarding.reset') }}" method="POST" class="flex justify-end">
+                    @csrf
+                    <button type="submit" class="btn btn-outlined h-10">{{ __('profile.onboarding_reset') }}</button>
+                </form>
+            </section>
+
+            <section class="h-full space-y-4 rounded-2xl border border-red-500/30 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_97%,white_3%),color-mix(in_srgb,#ef4444_12%,var(--color-card)))] p-4 sm:p-5 shadow-[0_12px_28px_color-mix(in_srgb,black_8%,transparent)]">
+                <h2 class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-card/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-400">{{ __('profile.delete_section') }}</h2>
+                <p class="text-sm text-muted-foreground">{{ __('profile.delete_description') }}</p>
+
+                <form action="{{ route('profile.destroy') }}" method="POST" class="space-y-3">
+                    @csrf
+                    @method('DELETE')
+
+                    <x-form.field
+                        :placeholder="__('profile.delete_password_placeholder')"
+                        :label="__('profile.delete_password')"
+                        name="current_password"
+                        type="password"
+                    />
+                    <x-form.error name="delete_account" />
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn btn-danger-outlined h-10">{{ __('profile.delete_account') }}</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
 </x-layout>

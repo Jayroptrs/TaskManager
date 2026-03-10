@@ -120,7 +120,7 @@ select.input-neon-select option {
         0 0 0 calc(var(--spacing) * 1.1) var(--color-primary);
 }
 
-@media (min-width: var(--breakpoint-md)) {
+@media (min-width: 768px) {
     .input {
         font-size: var(--text-sm);
     }

@@ -7,7 +7,7 @@
         <p class="page-subtitle">{{ __('ui.inbox_subtitle') }}</p>
 
         <div class="surface-card mt-5 rounded-2xl bg-card/85 p-3 sm:p-4">
-            <div class="grid grid-cols-1 gap-2 rounded-xl border border-border/70 bg-card/70 p-1 sm:grid-cols-4">
+            <div class="grid grid-cols-1 gap-2 rounded-xl border border-border/70 bg-card/70 p-1 sm:grid-cols-2 xl:grid-cols-4">
                 <a href="{{ route('inbox.index', ['tab' => 'mentions', 'mention' => $mentionFilter]) }}"
                    class="no-link-hover inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-semibold whitespace-nowrap transition-[box-shadow,border-color,transform] duration-300 ease-out hover:-translate-y-0.5 shadow-[0_0_0_color-mix(in_srgb,var(--color-primary)_0%,transparent)] sm:text-sm {{ $activeTab === 'mentions' ? 'bg-primary text-primary-foreground shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_50%,transparent)]' : 'border border-border/80 text-foreground/85 hover:border-primary/45 hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_40%,transparent)]' }}">
                     {{ __('ui.mentions') }} <span class="ml-1 text-[11px]">{{ $unreadMentionCount }}</span>
@@ -86,10 +86,10 @@
                             class="no-link-hover block rounded-xl border border-border/80 bg-card/80 p-3 shadow-[0_8px_20px_color-mix(in_srgb,black_8%,transparent)] transition-colors hover:border-primary/45"
                         >
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p class="text-sm text-foreground/90">{{ __('ui.mentioned_you', ['name' => $mention->mentionedBy->name]) }}</p>
+                                <p class="min-w-0 break-words text-sm text-foreground/90">{{ __('ui.mentioned_you', ['name' => $mention->mentionedBy->name]) }}</p>
                                 <span class="text-xs text-muted-foreground">{{ $mention->created_at->diffForHumans() }}</span>
                             </div>
-                            <p class="mt-1 text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $mention->task->title]) }}</p>
+                            <p class="mt-1 break-words text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $mention->task->title]) }}</p>
                             <p class="mt-1.5 text-xs text-muted-foreground">{{ \Illuminate\Support\Str::limit($mention->comment->body ?? '', 140) }}</p>
                         </a>
                     @endforeach
@@ -104,9 +104,9 @@
                 @if ($invites && $invites->count() > 0)
                     @foreach ($invites as $inviteRequest)
                         <div class="rounded-xl border border-border/80 bg-card/80 p-3 shadow-[0_8px_20px_color-mix(in_srgb,black_8%,transparent)]">
-                            <p class="text-sm text-foreground/90">{{ __('ui.invite_from', ['name' => $inviteRequest->inviter->name]) }}</p>
-                            <p class="mt-1 text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $inviteRequest->task->title]) }}</p>
-                            <div class="mt-3 flex gap-2">
+                            <p class="break-words text-sm text-foreground/90">{{ __('ui.invite_from', ['name' => $inviteRequest->inviter->name]) }}</p>
+                            <p class="mt-1 break-words text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $inviteRequest->task->title]) }}</p>
+                            <div class="mt-3 flex flex-wrap gap-2">
                                 <form method="POST" action="{{ route('task.collab-requests.accept', $inviteRequest) }}">
                                     @csrf
                                     <button class="btn h-8 px-3 text-xs">{{ __('ui.accept') }}</button>
@@ -133,10 +133,10 @@
                             class="no-link-hover block rounded-xl border border-border/80 bg-card/80 p-3 shadow-[0_8px_20px_color-mix(in_srgb,black_8%,transparent)] transition-colors hover:border-primary/45"
                         >
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p class="text-sm text-foreground/90">{{ __('ui.reminder_due_on', ['date' => $reminder->due_date->translatedFormat('j M Y')]) }}</p>
+                                <p class="min-w-0 break-words text-sm text-foreground/90">{{ __('ui.reminder_due_on', ['date' => $reminder->due_date->translatedFormat('j M Y')]) }}</p>
                                 <span class="text-xs text-muted-foreground">{{ $reminder->created_at->diffForHumans() }}</span>
                             </div>
-                            <p class="mt-1 text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $reminder->task->title]) }}</p>
+                            <p class="mt-1 break-words text-xs text-muted-foreground">{{ __('ui.invite_for_task', ['title' => $reminder->task->title]) }}</p>
                         </a>
                     @endforeach
                     <div class="pt-2">{{ $reminders->links() }}</div>
@@ -154,10 +154,10 @@
                             class="no-link-hover block rounded-xl border border-border/80 bg-card/80 p-3 shadow-[0_8px_20px_color-mix(in_srgb,black_8%,transparent)] transition-colors hover:border-primary/45"
                         >
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p class="text-sm text-foreground/90">{{ __('ui.support_reply_from', ['name' => $reply->user?->name ?? __('support.support_team')]) }}</p>
+                                <p class="min-w-0 break-words text-sm text-foreground/90">{{ __('ui.support_reply_from', ['name' => $reply->user?->name ?? __('support.support_team')]) }}</p>
                                 <span class="text-xs text-muted-foreground">{{ $reply->created_at->diffForHumans() }}</span>
                             </div>
-                            <p class="mt-1 text-xs text-muted-foreground">{{ __('ui.support_ticket_subject', ['subject' => $reply->supportMessage?->subject ?? '-']) }}</p>
+                            <p class="mt-1 break-words text-xs text-muted-foreground">{{ __('ui.support_ticket_subject', ['subject' => $reply->supportMessage?->subject ?? '-']) }}</p>
                             <p class="mt-1.5 text-xs text-muted-foreground">{{ \Illuminate\Support\Str::limit($reply->message ?? '', 140) }}</p>
                         </a>
                     @endforeach

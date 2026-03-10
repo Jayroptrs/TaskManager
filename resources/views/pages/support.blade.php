@@ -9,7 +9,7 @@
         </p>
 
         <div class="mt-8 space-y-6">
-            <x-card is="section" hoverable="false" class="p-6">
+            <x-card is="section" hoverable="false" class="p-4 sm:p-6">
                 <h2 class="text-xl font-semibold text-foreground">{{ __('support.how_title') }}</h2>
                 <ol class="mt-3 list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
                     <li>{{ __('support.how_1') }}</li>
@@ -18,7 +18,7 @@
                 </ol>
             </x-card>
 
-            <x-card is="section" hoverable="false" class="p-6">
+            <x-card is="section" hoverable="false" class="p-4 sm:p-6">
                 <h2 class="text-xl font-semibold text-foreground">{{ __('support.time_title') }}</h2>
                 <ol class="mt-3 list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
                     <li>{{ __('support.time_1') }}</li>
@@ -28,7 +28,7 @@
                 </ol>
             </x-card>
 
-            <x-card is="section" hoverable="false" class="p-6">
+            <x-card is="section" hoverable="false" class="p-4 sm:p-6">
                 <h2 class="text-xl font-semibold text-foreground">{{ __('support.faq_title') }}</h2>
                 @php
                     $faqs = collect(__('support.faqs'));
@@ -103,7 +103,7 @@
         </div>
 
         <div class="mt-8 grid gap-6 lg:grid-cols-2">
-            <x-card is="section" hoverable="false" class="p-6">
+            <x-card is="section" hoverable="false" class="p-4 sm:p-6">
                 <h2 class="text-xl font-semibold text-foreground">{{ __('support.new_message') }}</h2>
                 <form method="POST" action="{{ route('support.store') }}" class="mt-4 space-y-4">
                     @csrf
@@ -198,7 +198,7 @@
                 </form>
             </x-card>
 
-            <x-card is="section" hoverable="false" class="p-6">
+            <x-card is="section" hoverable="false" class="p-4 sm:p-6">
                 <h2 class="text-xl font-semibold text-foreground">{{ __('support.my_recent') }}</h2>
                 @php
                     $supportStatusLabels = __('support.statuses');
@@ -216,8 +216,8 @@
                                 href="{{ route('support', ['ticket' => $ticket->id]) }}"
                                 class="block w-full rounded-lg border border-border/80 bg-card/70 p-3 text-left transition-colors hover:border-primary/45"
                             >
-                                <div class="flex items-center justify-between gap-3">
-                                    <p class="font-semibold text-foreground text-sm">{{ $ticket->subject }}</p>
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                    <p class="min-w-0 break-words font-semibold text-foreground text-sm">{{ $ticket->subject }}</p>
                                     <span class="text-xs {{ $supportStatusClasses[$ticket->status] ?? 'text-muted-foreground' }}">
                                         {{ data_get($supportStatusLabels, $ticket->status, ucfirst((string) $ticket->status)) }}
                                     </span>
@@ -305,7 +305,7 @@
                     <p class="mt-3 text-sm text-muted-foreground">
                         {{ __('support.has_account') }}
                     </p>
-                    <div class="mt-4 flex gap-3">
+                    <div class="mt-4 flex flex-wrap gap-3">
                         <a href="{{ route('login') }}" class="btn">{{ __('ui.login') }}</a>
                     </div>
                 @endauth

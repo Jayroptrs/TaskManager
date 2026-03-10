@@ -9,7 +9,7 @@
         <a href="{{ route('task.index') }}" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary no-link-hover">
             <span>&larr; {{ __('ui.back') }}</span>
         </a>
-        <h1 class="mt-3 text-4xl font-bold tracking-tight">{{ __('dashboard.title') }}</h1>
+        <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ __('dashboard.title') }}</h1>
         <p class="mt-2 text-sm text-muted-foreground">{{ __('dashboard.subtitle') }}</p>
     </header>
 

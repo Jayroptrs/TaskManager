@@ -51,7 +51,7 @@
 
             <h1 class="font-bold text-3xl sm:text-4xl">{{ $task->title }}</h1>
 
-            <div class="mt-2 flex gap-x-3 items-center">
+            <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <x-task.status-label :status="$task->status->value">{{ $task->status->label() }}</x-task.status-label>
                 <div class="text-muted-foreground text-sm">{{ $task->created_at->diffForHumans() }}</div>
                 @if ($task->due_date)
@@ -214,19 +214,19 @@
                         <div class="space-y-3">
                             @foreach ($topLevelComments as $comment)
                                 <div id="comment-{{ $comment->id }}" class="rounded-lg border border-border/70 bg-card/70 px-3 py-2" x-data="{ replyOpen: false }">
-                                    <div class="flex items-center justify-between gap-3">
-                                        <div class="flex items-center gap-2">
+                                    <div class="flex flex-wrap items-start justify-between gap-2">
+                                        <div class="flex min-w-0 items-center gap-2">
                                             <img
                                                 src="{{ $comment->user ? $comment->user->avatarUrl() : asset('images/avatar-anonymous.svg') }}"
                                                 alt=""
                                                 class="size-7 rounded-full border border-border/80 object-cover"
                                                 loading="lazy"
                                             >
-                                            <p class="text-sm font-medium text-foreground">
+                                            <p class="truncate text-sm font-medium text-foreground">
                                                 {{ $comment->user?->name ?? __('task.activity_system') }}
                                             </p>
                                         </div>
-                                        <div class="flex items-center gap-3">
+                                        <div class="flex flex-wrap items-center gap-2">
                                             <p class="text-xs text-muted-foreground">{{ $comment->created_at->diffForHumans() }}</p>
                                             @if ($canCommentOnTask)
                                                 <button type="button" @click="replyOpen = !replyOpen" class="text-xs text-muted-foreground hover:text-primary">
@@ -249,9 +249,9 @@
                                             @foreach ($comment->attachments as $attachment)
                                                 <a
                                                     href="{{ route('task.comments.attachments.download', [$task, $comment, $attachment]) }}"
-                                                    class="inline-flex items-center gap-1 rounded-full border border-border/80 px-2 py-1 text-[11px] text-foreground/80 hover:text-primary no-link-hover"
+                                                    class="no-link-hover inline-flex max-w-full items-center gap-1 rounded-full border border-border/80 px-2 py-1 text-[11px] text-foreground/80 hover:text-primary"
                                                 >
-                                                    {{ __('task.comment_attachment_download') }}: {{ $attachment->original_name }}
+                                                    <span class="truncate">{{ __('task.comment_attachment_download') }}: {{ $attachment->original_name }}</span>
                                                 </a>
                                             @endforeach
                                         </div>
@@ -326,19 +326,19 @@
                                         <div class="mt-3 ml-3 space-y-2 border-l border-border/70 pl-3">
                                             @foreach (($repliesByParent[$comment->id] ?? collect())->sortBy('created_at') as $reply)
                                                 <div id="comment-{{ $reply->id }}" class="rounded-lg border border-border/60 bg-card/60 px-3 py-2">
-                                                    <div class="flex items-center justify-between gap-3">
-                                                        <div class="flex items-center gap-2">
+                                                    <div class="flex flex-wrap items-start justify-between gap-2">
+                                                        <div class="flex min-w-0 items-center gap-2">
                                                             <img
                                                                 src="{{ $reply->user ? $reply->user->avatarUrl() : asset('images/avatar-anonymous.svg') }}"
                                                                 alt=""
                                                                 class="size-6 rounded-full border border-border/80 object-cover"
                                                                 loading="lazy"
                                                             >
-                                                            <p class="text-xs font-medium text-foreground">
+                                                            <p class="truncate text-xs font-medium text-foreground">
                                                                 {{ $reply->user?->name ?? __('task.activity_system') }}
                                                             </p>
                                                         </div>
-                                                        <div class="flex items-center gap-3">
+                                                        <div class="flex flex-wrap items-center gap-2">
                                                             <p class="text-[11px] text-muted-foreground">{{ $reply->created_at->diffForHumans() }}</p>
                                                             @if ($canCommentOnTask && ($reply->user_id === auth()->id() || $task->user_id === auth()->id()))
                                                                 <form method="POST" action="{{ route('task.comments.destroy', [$task, $reply]) }}">
@@ -356,9 +356,9 @@
                                                             @foreach ($reply->attachments as $attachment)
                                                                 <a
                                                                     href="{{ route('task.comments.attachments.download', [$task, $reply, $attachment]) }}"
-                                                                    class="inline-flex items-center gap-1 rounded-full border border-border/80 px-2 py-1 text-[10px] text-foreground/80 hover:text-primary no-link-hover"
+                                                                    class="no-link-hover inline-flex max-w-full items-center gap-1 rounded-full border border-border/80 px-2 py-1 text-[10px] text-foreground/80 hover:text-primary"
                                                                 >
-                                                                    {{ __('task.comment_attachment_download') }}: {{ $attachment->original_name }}
+                                                                    <span class="truncate">{{ __('task.comment_attachment_download') }}: {{ $attachment->original_name }}</span>
                                                                 </a>
                                                             @endforeach
                                                         </div>
@@ -565,10 +565,10 @@
 
     <x-modal name="task-collaborators-activity" :title="__('task.collaborators')">
         <div class="space-y-4">
-            <div class="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/60 px-3 py-2">
-                <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/60 px-3 py-2">
+                <div class="flex min-w-0 items-center gap-2">
                     <span class="inline-flex size-6 items-center justify-center rounded-full border border-primary/45 bg-primary/15 text-xs font-bold text-primary">S</span>
-                    <h3 class="text-sm font-semibold tracking-wide text-foreground">{{ __('task.collaborators') }}</h3>
+                    <h3 class="truncate text-sm font-semibold tracking-wide text-foreground">{{ __('task.collaborators') }}</h3>
                 </div>
                 <span class="inline-flex items-center rounded-full border border-border/80 bg-card/80 px-2 py-0.5 text-[11px] text-muted-foreground">
                     {{ $task->collaborators->count() }} {{ __('task.collaborators_count_label') }}
@@ -623,7 +623,7 @@
                             placeholder="{{ __('task.no_invite_link_yet') }}"
                         />
 
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
                             <form method="POST" action="{{ route('task.invites.link', $task) }}">
                                 @csrf
                                 <button type="submit" class="btn btn-outlined h-9 px-3 text-xs sm:text-sm">{{ __('task.generate_invite_link') }}</button>
@@ -709,7 +709,7 @@
                                     {{ $activityText }}
                                 </p>
                                 <p class="mt-0.5 text-xs text-muted-foreground">
-                                    {{ __('task.activity_by', ['name' => $actorName]) }} · {{ $log->created_at->diffForHumans() }}
+                                    {{ __('task.activity_by', ['name' => $actorName]) }} &middot; {{ $log->created_at->diffForHumans() }}
                                 </p>
                                 </div>
                             @endforeach
