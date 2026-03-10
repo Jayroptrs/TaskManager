@@ -6,6 +6,7 @@
             'tag' => request('tag'),
             'work' => request('work'),
             'view' => request('view'),
+            'month' => request('month'),
         ];
         $sortOptions = [
             ['value' => 'newest', 'label' => __('task.sort_newest')],
@@ -16,9 +17,14 @@
         $selectedSort = $selectedSort ?? request('sort', 'newest');
         $selectedTag = $selectedTag ?? request('tag', '');
         $selectedWork = $selectedWork ?? request('work', 'all');
-        $selectedView = $selectedView ?? (request('view', 'list') === 'board' || request('view') === 'bord' ? 'board' : 'list');
+        $selectedView = $selectedView ?? match (request('view', 'list')) {
+            'board', 'bord' => 'board',
+            'calendar', 'kalender' => 'calendar',
+            default => 'list',
+        };
         $listViewUrl = route('task.index', array_filter([...request()->except('page'), 'view' => 'list']));
         $boardViewUrl = route('task.index', array_filter([...request()->except(['page', 'status']), 'view' => 'board']));
+        $calendarViewUrl = route('task.index', array_filter([...request()->except(['page', 'status']), 'view' => 'calendar']));
     @endphp
 
     <div
@@ -66,11 +72,11 @@
                         x-data="{ active: @js($selectedView) }"
                         class="ml-1"
                     >
-                        <div class="relative grid grid-cols-2 items-center rounded-full bg-card/75 p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)]">
+                        <div class="relative grid grid-cols-3 items-center rounded-full bg-card/75 p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)]">
                             <span
-                                class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 ease-out will-change-transform"
-                                style="transform: translateX({{ $selectedView === 'board' ? '100%' : '0%' }});"
-                                x-bind:style="`transform: translateX(${active === 'list' ? '0%' : '100%'});`"
+                                class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-primary shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 ease-out will-change-transform"
+                                style="transform: translateX({{ $selectedView === 'board' ? '100%' : ($selectedView === 'calendar' ? '200%' : '0%') }});"
+                                x-bind:style="`transform: translateX(${({ list: '0%', board: '100%', calendar: '200%' })[active] ?? '0%'});`"
                             ></span>
 
                             <a
@@ -96,6 +102,18 @@
                                 :class="active === 'board' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
                             >
                                 {{ __('task.view_board') }}
+                            </a>
+                            <a
+                                href="{{ $calendarViewUrl }}"
+                                @click.prevent="
+                                    if (active === 'calendar') return;
+                                    active = 'calendar';
+                                    setTimeout(() => { window.location.href = '{{ $calendarViewUrl }}'; }, 110);
+                                "
+                                class="no-link-hover relative z-10 min-w-18 rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors duration-150"
+                                :class="active === 'calendar' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
+                            >
+                                {{ __('task.view_calendar') }}
                             </a>
                         </div>
                     </div>
@@ -128,7 +146,7 @@
                         @if ($selectedView !== 'board' && request('status'))
                             <input type="hidden" name="status" value="{{ request('status') }}">
                         @endif
-                        <input type="hidden" name="view" value="{{ $selectedView === 'board' ? 'board' : 'list' }}">
+                        <input type="hidden" name="view" value="{{ in_array($selectedView, ['board', 'calendar'], true) ? $selectedView : 'list' }}">
 
                         <div class="rounded-xl border border-border/80 bg-card/90 p-2.5 shadow-[inset_0_1px_0_color-mix(in_srgb,white_35%,transparent)]">
                             <p class="mb-1.5 text-[11px] leading-none uppercase tracking-[0.08em] text-muted-foreground">{{ __('task.search') }}</p>
@@ -320,6 +338,100 @@
                             </section>
                         @endforeach
                     </div>
+                @elseif ($selectedView === 'calendar')
+                    @php
+                        $calendarMonth = $calendarMonth ?? now()->startOfMonth();
+                        $tasksByDueDate = $tasksByDueDate ?? collect();
+                        $calendarDays = $calendarDays ?? collect();
+                        $calendarMonthTaskCount = $calendarMonthTaskCount ?? 0;
+                        $monthBase = request()->except(['page', 'month']);
+                        $previousMonthUrl = route('task.index', array_filter([...$monthBase, 'view' => 'calendar', 'month' => $calendarMonth->copy()->subMonth()->format('Y-m')]));
+                        $nextMonthUrl = route('task.index', array_filter([...$monthBase, 'view' => 'calendar', 'month' => $calendarMonth->copy()->addMonth()->format('Y-m')]));
+                        $currentMonthUrl = route('task.index', array_filter([...$monthBase, 'view' => 'calendar', 'month' => now()->startOfMonth()->format('Y-m')]));
+                        $weekdays = collect(range(0, 6))->map(fn ($dayOffset) => $calendarMonth->copy()->startOfWeek(\Carbon\CarbonInterface::MONDAY)->addDays($dayOffset));
+                    @endphp
+
+                    <section class="surface-card rounded-2xl p-3 sm:p-4">
+                        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-foreground">{{ $calendarMonth->translatedFormat('F Y') }}</h3>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ __('task.calendar_due_in_month', ['count' => $calendarMonthTaskCount]) }}
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <a href="{{ $previousMonthUrl }}" class="btn btn-outlined h-8 px-3 text-xs">{{ __('task.calendar_previous_month') }}</a>
+                                <a href="{{ $currentMonthUrl }}" class="btn btn-outlined h-8 px-3 text-xs">{{ __('task.calendar_today') }}</a>
+                                <a href="{{ $nextMonthUrl }}" class="btn btn-outlined h-8 px-3 text-xs">{{ __('task.calendar_next_month') }}</a>
+                            </div>
+                        </header>
+
+                        @if ($calendarMonthTaskCount === 0)
+                            <div class="empty-state mt-3">
+                                <p class="empty-state-title">{{ __('task.calendar_empty_title') }}</p>
+                                <p class="empty-state-copy">{{ __('task.calendar_empty_copy') }}</p>
+                            </div>
+                        @endif
+
+                        <div class="mt-3">
+                            <div class="grid grid-cols-7 gap-2">
+                                @foreach ($weekdays as $weekday)
+                                    <div class="rounded-lg border border-border/70 bg-card/70 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                                        {{ $weekday->translatedFormat('D') }}
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="mt-2 grid grid-cols-7 gap-2">
+                                @foreach ($calendarDays as $day)
+                                    @php
+                                        $dayTasks = $tasksByDueDate->get($day->toDateString(), collect());
+                                        $isCurrentMonth = $day->isSameMonth($calendarMonth);
+                                        $isToday = $day->isSameDay(now());
+                                    @endphp
+                                    <div class="group relative min-h-32 rounded-xl border p-2 transition-colors duration-150 {{ $isCurrentMonth ? 'border-border/80 bg-card/88' : 'border-border/50 bg-card/55' }} {{ $isToday ? 'shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_55%,transparent),0_0_14px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]' : '' }}">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outlined absolute right-1.5 top-1.5 z-10 inline-flex h-6 w-6 items-center justify-center rounded-md px-0 text-sm opacity-0 transition-all duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
+                                            aria-label="{{ __('task.calendar_add_task') }}"
+                                            title="{{ __('task.calendar_add_task') }}"
+                                            @click="
+                                                window.dispatchEvent(new CustomEvent('task-create-due-date-selected', { detail: { dueDate: '{{ $day->toDateString() }}' } }));
+                                                $dispatch('open-modal', 'create-task');
+                                            "
+                                        >
+                                            +
+                                        </button>
+                                        <div class="flex items-center justify-between gap-1">
+                                            <span class="text-xs font-semibold {{ $isCurrentMonth ? 'text-foreground/90' : 'text-muted-foreground/70' }}">{{ $day->day }}</span>
+                                            @if ($dayTasks->count() > 0)
+                                                <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-primary/85 px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{{ $dayTasks->count() }}</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="mt-2 space-y-1.5">
+                                            @foreach ($dayTasks->take(3) as $task)
+                                                <a
+                                                    href="{{ route('task.show', $task) }}"
+                                                    class="no-link-hover block rounded-md border border-border/70 bg-card/80 px-2 py-1 text-[11px] font-medium text-foreground/85 transition-colors duration-150 hover:border-primary/55 hover:bg-card"
+                                                    title="{{ $task->title }}"
+                                                >
+                                                    <span class="line-clamp-2">{{ $task->title }}</span>
+                                                </a>
+                                            @endforeach
+
+                                            @if ($dayTasks->count() > 3)
+                                                <p class="px-1 text-[11px] font-medium text-muted-foreground">
+                                                    {{ __('task.calendar_more_tasks', ['count' => $dayTasks->count() - 3]) }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </section>
                 @else
                     <div class="grid md:grid-cols-2 gap-6">
                         @forelse($tasks as $task)

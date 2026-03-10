@@ -4,6 +4,7 @@ use App\Models\Task;
 use App\Models\TaskCollaborationRequest;
 use App\Models\TaskCommentMention;
 use App\Models\TaskDueDateReminder;
+use App\Models\SupportMessage;
 use App\Models\User;
 
 test('authenticated user can open inbox center and see mentions tab content', function () {
@@ -236,4 +237,110 @@ test('reminders unread filter hides read items while all filter includes them', 
         ->assertOk()
         ->assertSee('Unread reminder task')
         ->assertSee('Read reminder task');
+});
+
+test('user can view support updates tab in inbox', function () {
+    $user = User::factory()->create();
+    $admin = User::factory()->admin()->create(['name' => 'Support Admin']);
+
+    $ticket = $user->supportMessages()->create([
+        'subject' => 'Upload issue',
+        'category' => 'bug',
+        'message' => 'Mijn bijlage uploadt niet.',
+        'status' => SupportMessage::STATUS_WAITING_FOR_USER,
+    ]);
+
+    $ticket->replies()->create([
+        'user_id' => $admin->id,
+        'is_admin' => true,
+        'message' => 'Kun je aangeven welke browser je gebruikt?',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('inbox.index', ['tab' => 'support']))
+        ->assertOk()
+        ->assertSee(__('ui.support_updates'))
+        ->assertSee('Upload issue')
+        ->assertSee('Support Admin');
+});
+
+test('opening support inbox item marks ticket support replies as read and redirects to support page', function () {
+    $user = User::factory()->create();
+    $admin = User::factory()->admin()->create();
+
+    $ticket = $user->supportMessages()->create([
+        'subject' => 'Calendar bug',
+        'category' => 'bug',
+        'message' => 'Dagen verspringen in de kalender.',
+        'status' => SupportMessage::STATUS_WAITING_FOR_USER,
+    ]);
+
+    $firstReply = $ticket->replies()->create([
+        'user_id' => $admin->id,
+        'is_admin' => true,
+        'message' => 'Kun je een screenshot sturen?',
+        'read_at' => null,
+    ]);
+    $secondReply = $ticket->replies()->create([
+        'user_id' => $admin->id,
+        'is_admin' => true,
+        'message' => 'En gebeurt dit ook op mobiel?',
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('inbox.support.open', $firstReply))
+        ->assertRedirect(route('support', ['ticket' => $ticket->id]));
+
+    expect($firstReply->fresh()->read_at)->not->toBeNull();
+    expect($secondReply->fresh()->read_at)->not->toBeNull();
+});
+
+test('user can mark all support updates as read', function () {
+    $user = User::factory()->create();
+    $admin = User::factory()->admin()->create();
+
+    $ticket = $user->supportMessages()->create([
+        'subject' => 'Status issue',
+        'category' => 'account',
+        'message' => 'Mijn status lijkt niet te updaten.',
+        'status' => SupportMessage::STATUS_WAITING_FOR_USER,
+    ]);
+
+    $reply = $ticket->replies()->create([
+        'user_id' => $admin->id,
+        'is_admin' => true,
+        'message' => 'Kun je dit issue reproduceren?',
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('inbox.support.read-all'))
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($reply->fresh()->read_at)->not->toBeNull();
+});
+
+test('user cannot open support inbox item that belongs to another user', function () {
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $admin = User::factory()->admin()->create();
+
+    $ticket = $owner->supportMessages()->create([
+        'subject' => 'Private ticket',
+        'category' => 'security',
+        'message' => 'Privaat supportbericht.',
+        'status' => SupportMessage::STATUS_WAITING_FOR_USER,
+    ]);
+
+    $reply = $ticket->replies()->create([
+        'user_id' => $admin->id,
+        'is_admin' => true,
+        'message' => 'Privaat adminbericht.',
+    ]);
+
+    $this->actingAs($otherUser)
+        ->get(route('inbox.support.open', $reply))
+        ->assertForbidden();
 });

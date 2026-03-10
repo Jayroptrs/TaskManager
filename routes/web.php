@@ -50,6 +50,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index')->middleware('admin');
     Route::get('/admin/users/{user}/tasks', [AdminController::class, 'userTasks'])->name('admin.users.tasks')->middleware('admin');
     Route::patch('/admin/support/{supportMessage}/resolve', [AdminController::class, 'resolve'])->name('admin.support.resolve')->middleware(['admin', 'throttle:admin-actions']);
+    Route::patch('/admin/support/{supportMessage}/status', [AdminController::class, 'updateSupportStatus'])->name('admin.support.status')->middleware(['admin', 'throttle:admin-actions']);
+    Route::post('/admin/support/{supportMessage}/reply', [AdminController::class, 'replyToSupport'])->name('admin.support.reply')->middleware(['admin', 'throttle:admin-actions']);
     Route::delete('/admin/users/{user}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy')->middleware(['admin', 'throttle:admin-actions']);
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -78,12 +80,16 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('/inbox/mentions/{mention}', [TaskMentionController::class, 'open'])->name('inbox.mentions.open');
     Route::get('/inbox/reminders/{reminder}', [TaskDueDateReminderController::class, 'open'])->name('inbox.reminders.open');
+    Route::get('/inbox/support/{reply}', [InboxController::class, 'openSupportReply'])->name('inbox.support.open');
     Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
     Route::post('/inbox/mentions/read-all', [InboxController::class, 'markAllMentionsRead'])->name('inbox.mentions.read-all');
     Route::post('/inbox/reminders/read-all', [InboxController::class, 'markAllRemindersRead'])->name('inbox.reminders.read-all');
+    Route::post('/inbox/support/read-all', [InboxController::class, 'markAllSupportRead'])->name('inbox.support.read-all');
 
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('throttle:profile-update');
     Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('throttle:profile-update');
     Route::delete('profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy')->middleware('throttle:profile-update');
+    Route::post('/support/{supportMessage}/reply', [SupportController::class, 'reply'])->name('support.reply')->middleware('throttle:support-submissions');
+    Route::post('/support/{supportMessage}/resolve', [SupportController::class, 'resolve'])->name('support.resolve')->middleware('throttle:support-submissions');
 });

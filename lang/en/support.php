@@ -6,7 +6,7 @@ return [
     'how_title' => '1. How support works',
     'how_1' => 'Fill in the support form below as completely as possible (also available without an account).',
     'how_2' => 'After submission, your message is immediately registered in our support overview with necessary technical metadata (such as IP address and user agent).',
-    'how_3' => 'Logged-in users can see recent messages under "My recent messages"; for guest submissions, reCAPTCHA verification may be required.',
+    'how_3' => 'Logged-in users can see recent messages and ticket replies under "My recent messages"; for guest submissions, reCAPTCHA verification may be required.',
     'time_title' => '2. Response time and handling',
     'time_1' => 'We handle support requests on business days (Mon-Fri).',
     'time_2' => 'We use target timelines for first response and substantive handling.',
@@ -16,25 +16,51 @@ return [
     'faqs' => [
         [
             'q' => 'How quickly will I get a response to my support request?',
-            'a' => 'On business days, we usually respond within 1-2 business days. Complex requests may take longer.',
+            'a' => 'On business days, we usually respond within 1-2 business days. Urgent security-related reports are prioritized as soon as they come in. More complex technical issues can take longer to resolve, but we keep you updated in the meantime.',
         ],
         [
             'q' => 'Can I send a support message without an account?',
-            'a' => 'Yes. In that case, fill in your name and email address in the form.',
+            'a' => 'Yes. You can submit a support request by filling in your name, email address, and a clear issue description. Please note that without an account, you cannot follow the ticket conversation inside the app.',
         ],
         [
             'q' => 'Where can I see the status of my request?',
-            'a' => 'Logged-in users can view recent support messages on this page under "My recent messages".',
+            'a' => 'Logged-in users can view recent support tickets on this page under "My recent messages". For each ticket, you can see the current status, support replies, and full conversation history. You can also add extra details from there.',
+        ],
+        [
+            'q' => 'As a guest, will I receive ticket replies in the app?',
+            'a' => 'No, not in the app. Guests can submit support requests, but ticket replies and status updates are only visible in-app for logged-in users. If you want full follow-up, we recommend using an account.',
+        ],
+        [
+            'q' => 'How quickly can I get started?',
+            'a' => 'You can get started within minutes: create an account, add your first task, and structure your work right away. You can immediately set deadlines and reminders. You can also switch between list, board, and calendar views from the start.',
+        ],
+        [
+            'q' => 'Who is Jayro for?',
+            'a' => 'Jayro is built for freelancers, teams, and smaller organizations that want clear planning without heavy project tooling. It works well when you need tasks, progress, and collaboration in one place. This helps reduce scattered notes and fragmented communication.',
+        ],
+        [
+            'q' => 'What makes Jayro different from a simple to-do app?',
+            'a' => 'Jayro goes beyond a basic checklist. It combines tasks with collaboration, comments, mentions, deadlines, reminders, and multiple planning views in one workflow. That means you manage not only what to do, but also who is involved and when it should happen.',
+        ],
+        [
+            'q' => 'Why do teams choose Jayro?',
+            'a' => 'Teams choose Jayro because planning, communication, and follow-up are handled in one place. This reduces missed updates and unclear ownership. Everyone can quickly see next steps and who is responsible.',
+        ],
+        [
+            'q' => 'Can I adapt the tool to my way of working?',
+            'a' => 'Yes. You can tailor views, filters, and status usage to match your workflow. You can also adjust personal preferences such as language and accent color, so the workspace feels more natural for your team.',
         ],
         [
             'q' => 'What information should I include for a bug report?',
-            'a' => 'Explain what you did, what you expected, what happened, and preferably include error messages or clear reproduction steps.',
+            'a' => 'Include the exact steps you took, what you expected, and what actually happened. If possible, add an error message, screenshot, or short reproduction path. Also include device, browser, and timestamp to help us reproduce the issue faster.',
         ],
         [
             'q' => 'Can I send multiple updates about the same issue?',
-            'a' => 'Yes. Preferably use the same subject so we can quickly link your update to the existing request.',
+            'a' => 'Yes, and that is encouraged when you have new details. Preferably use the same subject and reference earlier context. This keeps everything in one ticket and helps support resolve your issue faster and more consistently.',
         ],
     ],
+    'faq_show_more' => 'Show more questions',
+    'faq_show_less' => 'Show fewer questions',
     'new_message' => 'New support message',
     'name' => 'Name',
     'name_placeholder' => 'Your name',
@@ -51,6 +77,21 @@ return [
     'my_recent' => 'My recent messages',
     'resolved' => 'Resolved',
     'open' => 'Open',
+    'status_label' => 'Status',
+    'statuses' => [
+        'open' => 'Open',
+        'in_progress' => 'In progress',
+        'waiting_for_user' => 'Waiting for user response',
+        'resolved' => 'Resolved',
+    ],
+    'conversation' => 'Conversation',
+    'you' => 'You',
+    'support_team' => 'Support team',
+    'reply_label' => 'Your reply',
+    'reply_placeholder' => 'Add extra information about your issue or question.',
+    'send_reply' => 'Send reply',
+    'awaiting_user_resolution' => 'Support marked this ticket as resolved. Confirm below when the issue is resolved for you as well.',
+    'mark_resolved' => 'Also mark as resolved',
     'none_sent' => 'You have not sent any support messages yet.',
     'login_to_view' => 'Log in to view your previous support messages.',
     'categories' => [

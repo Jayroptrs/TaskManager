@@ -4,6 +4,10 @@ return [
     'recaptcha_required' => 'reCAPTCHA is not loaded or not completed. Check blockers, domain settings, and try again.',
     'recaptcha_failed' => 'reCAPTCHA verification failed. Please try again.',
     'support_sent' => 'Your support message has been sent.',
+    'support_reply_sent' => 'Your reply has been sent to support.',
+    'support_reply_sent_admin' => 'Your message has been sent to the user.',
+    'support_status_updated' => 'Support status has been updated.',
+    'support_user_marked_resolved' => 'Thanks. The support ticket is now fully marked as resolved.',
     'task_status_updated' => 'Status updated.',
     'login_success' => 'You have logged in successfully.',
     'collab_added' => 'Collaborator added.',
@@ -24,5 +28,6 @@ return [
     'comment_deleted' => 'Comment removed.',
     'inbox_mentions_marked_read' => 'All mentions have been marked as read.',
     'inbox_reminders_marked_read' => 'All reminders have been marked as read.',
+    'inbox_support_marked_read' => 'All support updates have been marked as read.',
     'open_tasks_limit_reached' => 'You reached the limit of :max open tasks. Complete a task first.',
 ];

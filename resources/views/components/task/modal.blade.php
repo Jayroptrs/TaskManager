@@ -57,6 +57,7 @@
             }
         },
         }"
+        @task-create-due-date-selected.window="dueDate = $event.detail?.dueDate ?? dueDate"
         method="POST"
         action="{{ $task->exists ? route('task.update', $task) : route('task.store') }}"
         enctype="multipart/form-data"

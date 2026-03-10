@@ -11,9 +11,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Task;
 use App\Models\SupportMessage;
+use App\Models\SupportMessageReply;
 use App\Models\TaskComment;
 use App\Models\TaskCommentMention;
 use App\Models\TaskCollaborationRequest;
@@ -94,6 +96,30 @@ class User extends Authenticatable
     public function supportMessages(): HasMany
     {
         return $this->hasMany(SupportMessage::class);
+    }
+
+    public function supportMessageReplies(): HasMany
+    {
+        return $this->hasMany(SupportMessageReply::class);
+    }
+
+    public function supportRepliesForOwnTickets(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            SupportMessageReply::class,
+            SupportMessage::class,
+            'user_id',
+            'support_message_id',
+            'id',
+            'id'
+        );
+    }
+
+    public function unreadSupportReplies(): HasManyThrough
+    {
+        return $this->supportRepliesForOwnTickets()
+            ->where('support_message_replies.is_admin', true)
+            ->whereNull('support_message_replies.read_at');
     }
 
     public function incomingCollaborationRequests(): HasMany

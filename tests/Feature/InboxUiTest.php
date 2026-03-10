@@ -3,6 +3,7 @@
 use App\Models\Task;
 use App\Models\TaskCollaborationRequest;
 use App\Models\TaskCommentMention;
+use App\Models\SupportMessage;
 use App\Models\User;
 
 test('inbox dropdown renders unread mention with link to open mention item', function () {
@@ -127,4 +128,30 @@ test('inbox mention item is not visible to other authenticated users', function 
         ->assertOk()
         ->assertDontSee(route('inbox.mentions.open', $mention), false)
         ->assertDontSee(__('ui.mentioned_you', ['name' => $owner->name]));
+});
+
+test('inbox dropdown renders unread support update with link', function () {
+    $user = User::factory()->create();
+    $admin = User::factory()->admin()->create(['name' => 'Support Admin']);
+
+    $ticket = $user->supportMessages()->create([
+        'subject' => 'Support inbox item',
+        'category' => 'bug',
+        'message' => 'Bug in de app.',
+        'status' => SupportMessage::STATUS_WAITING_FOR_USER,
+    ]);
+
+    $reply = $ticket->replies()->create([
+        'user_id' => $admin->id,
+        'is_admin' => true,
+        'message' => 'Kun je extra details delen?',
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee(__('ui.support_updates'))
+        ->assertSee(__('ui.support_reply_from', ['name' => $admin->name]))
+        ->assertSee(route('inbox.support.open', $reply), false);
 });

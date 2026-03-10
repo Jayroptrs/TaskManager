@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Privacyverklaring (AVG)',
-    'version' => 'Versie: 1.2 - Laatst bijgewerkt: 26-02-2026.',
+    'version' => 'Versie: 1.3 - Laatst bijgewerkt: 10-03-2026.',
     'sections' => [
         'controller_title' => '1. Wie is verwerkingsverantwoordelijke?',
         'service' => 'Dienst:',
@@ -13,8 +13,10 @@ return [
         'data_title' => '2. Welke persoonsgegevens verwerken wij?',
         'data_items' => [
             'Accountgegevens: naam, e-mailadres en gehashte wachtwoorden.',
-            'Gebruikersinhoud: taken, subtaken/checklist-items, opmerkingen, tags, links en eventuele afbeeldingen.',
-            'Samenwerkingsgegevens: uitnodigingen, rollen (eigenaar/samenwerker) en toewijzingen op checklist-stappen.',
+            'Profielgegevens: profielfoto (indien geupload) en accountvoorkeuren zoals taal, accentkleur en onboardingstatus.',
+            'Gebruikersinhoud: taken, subtaken/checklist-items, opmerkingen, tags, links, deadlines, reminder-instellingen en geuploade bestanden/afbeeldingen.',
+            'Samenwerkingsgegevens: uitnodigingen, rollen (eigenaar/samenwerker), comment-mentions en toewijzingen op checklist-stappen.',
+            'Notificatiegegevens: inboxmeldingen voor uitnodigingen, mentions, reacties en deadline-herinneringen.',
             'Technische gegevens: IP-adres, user-agent en sessie-informatie voor beveiliging en werking.',
             'Communicatiegegevens: berichten die je aan support stuurt.',
         ],
@@ -28,6 +30,7 @@ return [
         'sharing_title' => '4. Ontvangers, verwerkers en doorgifte',
         'sharing_items' => [
             'Wij delen gegevens alleen met partijen die nodig zijn voor de dienstverlening, zoals hostingproviders.',
+            'Taken, comments, bijlagen en meldingen binnen een taak zijn zichtbaar voor de eigenaar en voor uitgenodigde teamleden van die taak.',
             'Bij gebruik van reCAPTCHA (voor niet-ingelogde supportberichten) worden verificatiegegevens gedeeld met Google.',
             'Supportberichten kunnen binnen Jayro worden ingezien door bevoegde beheerders om verzoeken af te handelen.',
             'Met verwerkers sluiten wij verwerkersovereenkomsten waar nodig.',
@@ -37,6 +40,7 @@ return [
         'retention_items' => [
             'Account- en taakdata: zolang je account actief is.',
             'Bij verwijdering van een account worden gekoppelde accountgegevens verwijderd volgens de ingestelde database-relaties.',
+            'Verwijderde profielafbeeldingen en taakbestanden worden verwijderd uit opslag en niet bewaard als actief bestand.',
             'Supportberichten en beveiligingsrelevante metadata bewaren wij niet langer dan noodzakelijk voor afhandeling, beveiliging en wettelijke verplichtingen.',
         ],
         'rights_title' => '6. Jouw privacyrechten',

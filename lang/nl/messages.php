@@ -4,6 +4,10 @@ return [
     'recaptcha_required' => 'reCAPTCHA is niet geladen of niet ingevuld. Controleer adblockers, domeininstellingen en probeer opnieuw.',
     'recaptcha_failed' => 'reCAPTCHA verificatie mislukt. Probeer opnieuw.',
     'support_sent' => 'Je supportbericht is verzonden.',
+    'support_reply_sent' => 'Je reactie is verzonden naar support.',
+    'support_reply_sent_admin' => 'Je bericht is verzonden naar de gebruiker.',
+    'support_status_updated' => 'Supportstatus is bijgewerkt.',
+    'support_user_marked_resolved' => 'Dank je. Het supportticket is nu volledig als afgehandeld gemarkeerd.',
     'task_status_updated' => 'Status bijgewerkt.',
     'login_success' => 'Je bent succesvol ingelogd.',
     'collab_added' => 'Samenwerker toegevoegd.',
@@ -24,5 +28,6 @@ return [
     'comment_deleted' => 'Reactie verwijderd.',
     'inbox_mentions_marked_read' => 'Alle mentions zijn gemarkeerd als gelezen.',
     'inbox_reminders_marked_read' => 'Alle herinneringen zijn gemarkeerd als gelezen.',
+    'inbox_support_marked_read' => 'Alle support-updates zijn gemarkeerd als gelezen.',
     'open_tasks_limit_reached' => 'Je hebt het maximum van :max open taken bereikt. Rond eerst een taak af.',
 ];

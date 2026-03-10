@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Algemene voorwaarden',
-    'version' => 'Versie: 1.2 - Laatst bijgewerkt: 26-02-2026.',
+    'version' => 'Versie: 1.3 - Laatst bijgewerkt: 10-03-2026.',
     'sections' => [
         'identity_title' => '1. Identiteit aanbieder',
         'service_name' => 'Dienstnaam:',
@@ -20,14 +20,16 @@ return [
             'Je gebruikt de dienst niet voor onrechtmatige of schadelijke doeleinden.',
             'Je plaatst geen content die inbreuk maakt op rechten van derden.',
             'Als eigenaar van een taak ben je verantwoordelijk voor wie je uitnodigt als samenwerker.',
+            'Uitnodigingslinks voor taken zijn bedoeld voor beoogde ontvangers; je bent verantwoordelijk voor veilig delen daarvan.',
             'Samenwerkers mogen alleen binnen gedeelde taken handelen en geen beveiliging of rechten omzeilen.',
+            'Het taggen van gebruikers in comments is alleen toegestaan voor werkgerelateerde communicatie binnen de taakcontext.',
         ],
         'availability_title' => '4. Beschikbaarheid en onderhoud',
-        'availability_text' => 'Jayro wordt geleverd als online dienst. Wij streven naar continuiteit, maar kunnen geen 100% ononderbroken beschikbaarheid garanderen. Onderhoud kan tijdelijk invloed hebben op toegankelijkheid.',
+        'availability_text' => 'Jayro wordt geleverd als online dienst. Wij streven naar continuiteit, maar kunnen geen 100% ononderbroken beschikbaarheid garanderen. Onderhoud kan tijdelijk invloed hebben op toegankelijkheid. Meldingen en deadline-reminders worden op best effort-basis geleverd.',
         'ip_title' => '5. Intellectuele eigendom',
         'ip_text' => 'Alle rechten op software, merk, vormgeving en documentatie van Jayro blijven eigendom van de aanbieder. Je ontvangt uitsluitend een beperkt, niet-overdraagbaar gebruiksrecht.',
         'liability_title' => '6. Aansprakelijkheid',
-        'liability_text' => 'Voor zover wettelijk toegestaan is aansprakelijkheid beperkt tot directe schade en maximaal het bedrag dat in de 12 maanden voorafgaand aan de schade is betaald voor de dienst (of EUR 0 indien gebruik kosteloos is), tenzij sprake is van opzet of bewuste roekeloosheid.',
+        'liability_text' => 'Voor zover wettelijk toegestaan is aansprakelijkheid beperkt tot directe schade en maximaal het bedrag dat in de 12 maanden voorafgaand aan de schade is betaald voor de dienst (of EUR 0 indien gebruik kosteloos is), tenzij sprake is van opzet of bewuste roekeloosheid. Gebruikers blijven zelf verantwoordelijk voor tijdige opvolging van taken, deadlines en reminders.',
         'termination_title' => '7. Beeindiging',
         'termination_text' => 'Wij mogen toegang blokkeren of beeindigen bij misbruik, schending van deze voorwaarden of wanneer dit noodzakelijk is voor veiligheid en naleving van wet- en regelgeving.',
         'law_title' => '8. Toepasselijk recht en geschillen',
