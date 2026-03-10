@@ -97,11 +97,8 @@
                 <x-form.error name="status" />
             </div>
 
-            <div class="flex flex-col gap-4 lg:flex-row">
-                <div
-                    class="w-full transition-all duration-300 ease-out"
-                    :class="String(dueDate ?? '').trim() !== '' ? 'lg:w-1/2' : 'lg:w-full'"
-                >
+            <div class="space-y-4">
+                <div class="w-full">
                     <x-form.field
                         :label="__('task.due_date_label')"
                         name="due_date"
@@ -113,14 +110,14 @@
                 </div>
 
                 <div
-                    class="space-y-2 w-full lg:w-1/2"
+                    class="space-y-2 w-full"
                     x-show="String(dueDate ?? '').trim() !== ''"
                     x-transition:enter="transition-all duration-300 ease-out"
-                    x-transition:enter-start="opacity-0 -translate-x-3"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
                     x-transition:leave="transition-all duration-200 ease-in"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 -translate-x-3"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-2"
                     x-cloak
                 >
                     <label class="label">{{ __('task.reminders_label') }}</label>

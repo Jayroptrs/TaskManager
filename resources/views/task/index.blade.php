@@ -43,13 +43,13 @@
                 this.filtersOpen = !this.filtersOpen;
             }
         }"
-        class="pt-4 sm:pt-5"
+        class="page-shell px-4 sm:px-6 lg:px-8"
     >
-        <section class="rounded-2xl border border-border/80 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_95%,transparent),color-mix(in_srgb,var(--color-input)_12%,var(--color-card)))] p-3 shadow-[0_10px_24px_color-mix(in_srgb,black_9%,transparent),0_0_14px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
+        <section class="surface-card rounded-2xl bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_95%,transparent),color-mix(in_srgb,var(--color-input)_12%,var(--color-card)))] p-3">
             <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-5">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight">{{ __('task.page_title') }}</h1>
-                    <p class="text-xs text-muted-foreground mt-0.5">{{ __('task.page_subtitle') }}</p>
+                    <h1 class="page-title">{{ __('task.page_title') }}</h1>
+                    <p class="page-subtitle">{{ __('task.page_subtitle') }}</p>
                 </div>
 
                 <div class="flex flex-wrap items-center justify-end gap-2 sm:mt-0">
@@ -353,9 +353,18 @@
                                 <div class="mt-4">{{ $task->created_at->diffForHumans() }}</div>
                             </x-card>
                         @empty
-                            <x-card>
-                                <p class="text-muted-foreground text-center">{{ __('task.no_tasks_found') }}</p>
-                            </x-card>
+                            <div class="empty-state md:col-span-2">
+                                <p class="empty-state-title">{{ __('task.no_tasks_found') }}</p>
+                                <p class="empty-state-copy">{{ __('task.page_subtitle') }}</p>
+                                <button
+                                    x-data
+                                    @click="$dispatch('open-modal', 'create-task')"
+                                    type="button"
+                                    class="btn mt-3 h-9 px-4 text-sm"
+                                >
+                                    + {{ __('task.new_task') }}
+                                </button>
+                            </div>
                         @endforelse
                     </div>
                 @endif

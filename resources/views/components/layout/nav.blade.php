@@ -1,10 +1,19 @@
-<div class="m-0 p-0" x-data="{
+﻿<div class="m-0 p-0" x-data="{
     theme: document.documentElement.dataset.theme || 'light',
     accent: document.documentElement.dataset.accent || 'green',
     motion: document.documentElement.dataset.motion || 'on',
+    canCompact: @js(auth()->check()),
+    scrolledCompact: false,
     mobileMenuOpen: false,
     guestSettingsOpen: false,
     desktopSettingsOpen: false,
+    updateScrolledHeader() {
+        const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+        this.scrolledCompact = this.canCompact && isDesktop && window.scrollY > 72;
+    },
+    scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
     setAccent(value) {
         this.accent = value;
         document.documentElement.dataset.accent = value;
@@ -16,13 +25,20 @@
         localStorage.setItem('motion', this.motion);
     }
 }" x-init="
+    const syncHeaderState = () => updateScrolledHeader();
+    syncHeaderState();
+    window.addEventListener('scroll', syncHeaderState, { passive: true });
+    window.addEventListener('resize', syncHeaderState);
     $watch('mobileMenuOpen', value => {
         document.documentElement.classList.toggle('overflow-hidden', value);
         document.body.classList.toggle('overflow-hidden', value);
     });
 ">
-<nav class="sticky top-0 z-50 m-0 border-b border-border/80 bg-card px-4 sm:px-6 py-3">
-    <div class="max-w-7xl lg:max-w-[76rem] mx-auto min-h-16 flex items-center relative">
+<nav
+    class="fixed left-0 right-0 top-0 z-[80] m-0 border-b border-border/80 bg-card px-4 sm:px-6 transition-all duration-300 ease-out"
+    :class="scrolledCompact ? 'py-1.5' : 'py-3'"
+>
+    <div class="max-w-7xl lg:max-w-[76rem] mx-auto flex items-center relative transition-all duration-300 ease-out" :class="scrolledCompact ? 'min-h-12' : 'min-h-16'">
         @php
             $brandClass = "inline-block font-['Trebuchet_MS','Avenir_Next','Segoe_UI',sans-serif] text-[clamp(1.5rem,2.8vw,2rem)] font-extrabold uppercase tracking-[0.06em] leading-none text-[color:color-mix(in_srgb,var(--color-primary)_70%,var(--color-foreground))] [text-shadow:0_0_18px_color-mix(in_srgb,var(--color-primary)_35%,transparent)] transition-all duration-200 hover:-translate-y-px hover:text-[color:color-mix(in_srgb,var(--color-primary)_86%,var(--color-foreground))] hover:[text-shadow:0_0_10px_color-mix(in_srgb,var(--color-primary)_60%,transparent),0_0_24px_color-mix(in_srgb,var(--color-primary)_50%,transparent),0_0_40px_color-mix(in_srgb,var(--color-primary)_35%,transparent)]";
             $locale = app()->getLocale();
@@ -46,11 +62,11 @@
                 : 0;
             $inboxCount = $pendingCollabCount + $unreadMentionCount + $unreadReminderCount;
         @endphp
-        <div class="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
+        <div class="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 transition-all duration-200" :class="scrolledCompact ? 'md:hidden' : ''">
             <a href="/" class="{{ $brandClass }}" aria-label="Jayro Home">Jayro</a>
         </div>
         @auth
-            <div class="absolute left-1/2 hidden max-w-[34rem] -translate-x-1/2 items-center gap-8 xl:flex">
+            <div class="pointer-events-none absolute left-1/2 hidden max-w-[34rem] -translate-x-1/2 items-center gap-8 transition-all duration-200 xl:flex" :class="scrolledCompact ? 'xl:hidden' : ''">
                 <span class="max-w-[22rem] truncate font-bold text-foreground/90">{{ __('ui.welcome', ['name' => auth()->user()->name]) }}</span>
             </div>
         @endauth
@@ -151,7 +167,10 @@
             @endguest
         </div>
 
-        <div class="ml-auto hidden items-center gap-3 md:flex lg:gap-5">
+        <div
+            class="ml-auto hidden items-center gap-3 transition-all duration-300 ease-out md:flex lg:gap-5"
+            :class="scrolledCompact ? '-translate-x-4 opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'"
+        >
             @auth
                 @if (auth()->user()->isAdmin())
                     <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('admin.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('admin.index') }}">{{ __('ui.admin') }}</a>
@@ -160,7 +179,7 @@
                 <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('dashboard.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('dashboard.index') }}">{{ __('ui.dashboard') }}</a>
                 <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('profile.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('profile.edit') }}">{{ __('ui.account') }}</a>
 
-                <div class="relative" x-data="{ inviteOpen: false }" @click.outside="inviteOpen = false">
+                <div class="relative" x-data="{ inviteOpen: false }" @click.outside="inviteOpen = false" x-show="!scrolledCompact" x-transition.opacity.duration.160ms>
                     <button
                         type="button"
                         @click="inviteOpen = !inviteOpen"
@@ -246,26 +265,27 @@
                 </div>
             @endauth
 
-            @guest
-                <a class="text-foreground/80 hover:text-foreground" href="/login">{{ __('ui.login') }}</a>
-                <a href="/register" class="btn">{{ __('ui.register') }}</a>
-            @endguest
+            <div class="flex items-center gap-3 lg:gap-5" x-show="!scrolledCompact" x-transition.opacity.duration.160ms>
+                @guest
+                    <a class="text-foreground/80 hover:text-foreground" href="/login">{{ __('ui.login') }}</a>
+                    <a href="/register" class="btn">{{ __('ui.register') }}</a>
+                @endguest
 
-            <div class="relative" @click.outside="desktopSettingsOpen = false">
-                <button
-                    type="button"
-                    @click="desktopSettingsOpen = !desktopSettingsOpen"
-                    aria-label="{{ __('ui.settings') }}"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border/80 bg-card/85 text-foreground/85 transition-all duration-200 hover:border-primary/45 hover:text-primary hover:shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_28%,transparent)]"
-                >
-                    <span class="text-sm leading-none">&#9881;</span>
-                </button>
+                <div class="relative" @click.outside="desktopSettingsOpen = false">
+                    <button
+                        type="button"
+                        @click="desktopSettingsOpen = !desktopSettingsOpen"
+                        aria-label="{{ __('ui.settings') }}"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border/80 bg-card/85 text-foreground/85 transition-all duration-200 hover:border-primary/45 hover:text-primary hover:shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_28%,transparent)]"
+                    >
+                        <span class="text-sm leading-none">&#9881;</span>
+                    </button>
 
-                <div
-                    x-show="desktopSettingsOpen"
-                    x-transition.origin.top.right.duration.180ms
-                    class="absolute right-0 top-10 z-40 w-60 rounded-xl border border-border/80 bg-card/95 p-3 shadow-[0_16px_34px_color-mix(in_srgb,black_18%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_16%,transparent)] backdrop-blur-md"
-                >
+                    <div
+                        x-show="desktopSettingsOpen"
+                        x-transition.origin.top.right.duration.180ms
+                        class="absolute right-0 top-10 z-40 w-60 rounded-xl border border-border/80 bg-card/95 p-3 shadow-[0_16px_34px_color-mix(in_srgb,black_18%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_16%,transparent)] backdrop-blur-md"
+                    >
                     <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ __('ui.settings') }}</p>
 
                     <div class="flex items-center justify-between gap-2 rounded-lg border border-border/70 bg-card/70 px-2.5 py-2">
@@ -329,18 +349,53 @@
                             <span class="absolute left-0.5 top-0.5 h-[18px] w-[18px] rounded-full bg-muted-foreground" :class="motion === 'on' ? 'translate-x-5 bg-primary' : 'translate-x-0'"></span>
                         </button>
                     </div>
+                    </div>
+                </div>
+
+                @auth
+                    <form action="/logout" method="POST">
+                        @csrf
+                        <button type="submit" class="btn">{{ __('ui.logout') }}</button>
+                    </form>
+                @endauth
+            </div>
+        </div>
+
+        @auth
+            <div class="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 md:flex">
+                <div
+                    class="flex items-center gap-3 transition-all duration-400 ease-out lg:gap-5"
+                    :class="scrolledCompact ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-8 opacity-0 pointer-events-none'"
+                >
+                    @if (auth()->user()->isAdmin())
+                        <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('admin.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('admin.index') }}">{{ __('ui.admin') }}</a>
+                    @endif
+                    <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('task.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('task.index') }}">{{ __('ui.tasks') }}</a>
+                    <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('dashboard.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('dashboard.index') }}">{{ __('ui.dashboard') }}</a>
+                    <a class="text-foreground/80 hover:text-foreground {{ request()->routeIs('profile.*') ? 'text-primary font-semibold' : '' }}" href="{{ route('profile.edit') }}">{{ __('ui.account') }}</a>
                 </div>
             </div>
+        @endauth
 
-            @auth
-                <form action="/logout" method="POST">
-                    @csrf
-                    <button type="submit" class="btn">{{ __('ui.logout') }}</button>
-                </form>
-            @endauth
-        </div>
+        <button
+            type="button"
+            x-show="scrolledCompact"
+            x-transition.opacity.duration.180ms
+            @click="scrollToTop()"
+            class="absolute right-0 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-card/90 text-base text-foreground/90 shadow-[0_0_12px_color-mix(in_srgb,var(--color-primary)_22%,transparent)] transition-all duration-200 hover:-translate-y-[55%] hover:border-primary/55 hover:text-primary md:inline-flex"
+            aria-label="{{ __('ui.back_to_top') }}"
+            x-cloak
+        >
+            &uarr;
+        </button>
     </div>
 </nav>
+
+<div
+    aria-hidden="true"
+    class="h-[88px] transition-all duration-300 ease-out md:h-[88px]"
+    :class="scrolledCompact ? 'md:h-[60px]' : 'md:h-[88px]'"
+></div>
 
 @auth
     <div

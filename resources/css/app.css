@@ -134,6 +134,15 @@ a {
     transition: color 180ms ease;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 72%, var(--color-border));
+    outline-offset: 2px;
+}
+
 a:not(.btn):not(.no-link-hover):hover {
     color: color-mix(in srgb, var(--color-primary) 72%, var(--color-foreground));
 }
@@ -141,6 +150,61 @@ a:not(.btn):not(.no-link-hover):hover {
 img {
     -webkit-user-drag: none;
     user-select: none;
+}
+
+.page-shell {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-top: 1.25rem;
+    padding-bottom: 2.25rem;
+}
+
+@media (min-width: 640px) {
+    .page-shell {
+        padding-top: 1.5rem;
+        padding-bottom: 2.75rem;
+    }
+}
+
+.page-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+    margin-top: 0.45rem;
+    font-size: 0.82rem;
+    color: var(--color-muted-foreground);
+}
+
+.surface-card {
+    border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--color-card) 90%, transparent);
+    box-shadow: 0 10px 24px color-mix(in srgb, black 10%, transparent);
+}
+
+.empty-state {
+    border: 1px dashed color-mix(in srgb, var(--color-border) 78%, transparent);
+    border-radius: 0.95rem;
+    padding: 1rem 1.05rem;
+    background: color-mix(in srgb, var(--color-card) 88%, transparent);
+    text-align: center;
+}
+
+.empty-state-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+}
+
+.empty-state-copy {
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--color-muted-foreground);
 }
 
 

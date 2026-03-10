@@ -40,6 +40,7 @@ return [
     'all_items' => 'All',
     'mark_all_read' => 'Mark all as read',
     'view_all_notifications' => 'View all notifications',
+    'back_to_top' => 'Back to top',
     'mentioned_you' => ':name mentioned you in a comment.',
     'reminder_due_on' => 'Deadline reminder: :date',
     'no_reminders' => 'No deadline reminders.',

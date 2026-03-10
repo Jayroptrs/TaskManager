@@ -5,6 +5,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 test('guest can submit support form for login issues', function () {
+    config([
+        'services.recaptcha.enabled' => false,
+        'services.recaptcha.site_key' => null,
+        'services.recaptcha.secret_key' => null,
+    ]);
+
     $this->post(route('support.store'), [
         'guest_name' => 'Gast Gebruiker',
         'guest_email' => 'gast@example.com',

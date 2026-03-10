@@ -1,12 +1,12 @@
 <x-layout>
-    <div class="py-8 md:py-12 max-w-7xl mx-auto">
+    <div class="page-shell px-4 sm:px-6 lg:px-8">
         <a href="{{ route('task.index') }}" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary no-link-hover">
             <span>&larr; {{ __('ui.back') }}</span>
         </a>
-        <h1 class="mt-3 text-4xl font-bold tracking-tight">{{ __('ui.inbox') }}</h1>
-        <p class="mt-2 text-sm text-muted-foreground">{{ __('ui.inbox_subtitle') }}</p>
+        <h1 class="page-title mt-3">{{ __('ui.inbox') }}</h1>
+        <p class="page-subtitle">{{ __('ui.inbox_subtitle') }}</p>
 
-        <div class="mt-5 rounded-2xl border border-border/80 bg-card/85 p-3 sm:p-4 shadow-[0_10px_24px_color-mix(in_srgb,black_10%,transparent)]">
+        <div class="surface-card mt-5 rounded-2xl bg-card/85 p-3 sm:p-4">
             <div class="grid grid-cols-1 gap-2 rounded-xl border border-border/70 bg-card/70 p-1 sm:grid-cols-3">
                 <a href="{{ route('inbox.index', ['tab' => 'mentions', 'mention' => $mentionFilter]) }}"
                    class="no-link-hover inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-semibold whitespace-nowrap transition-[box-shadow,border-color,transform] duration-300 ease-out hover:-translate-y-0.5 shadow-[0_0_0_color-mix(in_srgb,var(--color-primary)_0%,transparent)] sm:text-sm {{ $activeTab === 'mentions' ? 'bg-primary text-primary-foreground shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_50%,transparent)]' : 'border border-border/80 text-foreground/85 hover:border-primary/45 hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_40%,transparent)]' }}">
@@ -75,7 +75,10 @@
                     @endforeach
                     <div class="pt-2">{{ $mentions->links() }}</div>
                 @else
-                    <div class="rounded-xl border border-dashed border-border/80 bg-card/65 p-4 text-sm text-muted-foreground">{{ __('ui.no_messages') }}</div>
+                    <div class="empty-state">
+                        <p class="empty-state-title">{{ __('ui.no_messages') }}</p>
+                        <p class="empty-state-copy">{{ __('ui.inbox_subtitle') }}</p>
+                    </div>
                 @endif
             @elseif ($activeTab === 'invites')
                 @if ($invites && $invites->count() > 0)
@@ -97,7 +100,10 @@
                     @endforeach
                     <div class="pt-2">{{ $invites->links() }}</div>
                 @else
-                    <div class="rounded-xl border border-dashed border-border/80 bg-card/65 p-4 text-sm text-muted-foreground">{{ __('ui.no_invites') }}</div>
+                    <div class="empty-state">
+                        <p class="empty-state-title">{{ __('ui.no_invites') }}</p>
+                        <p class="empty-state-copy">{{ __('ui.inbox_subtitle') }}</p>
+                    </div>
                 @endif
             @else
                 @if ($reminders && $reminders->count() > 0)
@@ -115,7 +121,10 @@
                     @endforeach
                     <div class="pt-2">{{ $reminders->links() }}</div>
                 @else
-                    <div class="rounded-xl border border-dashed border-border/80 bg-card/65 p-4 text-sm text-muted-foreground">{{ __('ui.no_reminders') }}</div>
+                    <div class="empty-state">
+                        <p class="empty-state-title">{{ __('ui.no_reminders') }}</p>
+                        <p class="empty-state-copy">{{ __('ui.inbox_subtitle') }}</p>
+                    </div>
                 @endif
             @endif
         </section>

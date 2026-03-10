@@ -40,6 +40,7 @@ return [
     'all_items' => 'Alles',
     'mark_all_read' => 'Markeer alles gelezen',
     'view_all_notifications' => 'Bekijk alle berichten',
+    'back_to_top' => 'Naar boven',
     'mentioned_you' => ':name noemde je in een reactie.',
     'reminder_due_on' => 'Deadline herinnering: :date',
     'no_reminders' => 'Geen deadline-herinneringen.',

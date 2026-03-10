@@ -26,7 +26,7 @@
     x-show="show"
     @open-modal.window="if($event.detail === name) show = true"
     @close-modal="show = false"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 backdrop-blur-xs"
+    class="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 p-3 sm:p-4 backdrop-blur-xs"
     @keydown.escape.window="show = false"
     x-transition:enter="ease-out duration-180"
     x-transition:enter-start="opacity-100"
