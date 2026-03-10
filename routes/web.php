@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InboxController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\SessionsController;
@@ -43,6 +44,8 @@ Route::post('/login', [SessionsController::class, 'store'])->middleware(['guest'
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [SessionsController::class, 'destroy']);
+    Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
+    Route::post('/onboarding/reset', [OnboardingController::class, 'reset'])->name('onboarding.reset');
 
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index')->middleware('admin');
     Route::get('/admin/users/{user}/tasks', [AdminController::class, 'userTasks'])->name('admin.users.tasks')->middleware('admin');

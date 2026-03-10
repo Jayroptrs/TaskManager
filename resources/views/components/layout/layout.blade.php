@@ -28,6 +28,8 @@
             {{ $slot }}
         </main>
 
+        <x-layout.onboarding />
+
         <x-layout.footer />
     </div>
 
