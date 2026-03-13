@@ -13,6 +13,7 @@
             ['value' => 'oldest', 'label' => __('task.sort_oldest')],
             ['value' => 'deadline_soon', 'label' => __('task.sort_deadline_soon')],
             ['value' => 'deadline_late', 'label' => __('task.sort_deadline_late')],
+            ['value' => 'priority_high', 'label' => __('task.sort_priority_high')],
         ];
         $selectedSort = $selectedSort ?? request('sort', 'newest');
         $selectedTag = $selectedTag ?? request('tag', '');
@@ -123,8 +124,8 @@
 
         <section class="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-[auto_minmax(0,1fr)]">
             <aside
-                class="overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-[0_10px_24px_color-mix(in_srgb,black_10%,transparent),0_0_14px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] transition-[width,padding,box-shadow,border-color] duration-200 ease-out"
-                :class="filtersOpen ? 'w-full p-3 lg:w-72' : 'w-full p-2 lg:w-28'"
+                class="rounded-2xl border border-border/80 bg-card/90 shadow-[0_10px_24px_color-mix(in_srgb,black_10%,transparent),0_0_14px_color-mix(in_srgb,var(--color-primary)_10%,transparent)] transition-[width,padding,box-shadow,border-color] duration-200 ease-out"
+                :class="filtersOpen ? 'overflow-visible w-full p-3 lg:w-72' : 'overflow-hidden w-full p-2 lg:w-28'"
             >
                 <div
                     class="flex items-center justify-between"
@@ -147,6 +148,7 @@
                             <input type="hidden" name="status" value="{{ request('status') }}">
                         @endif
                         <input type="hidden" name="view" value="{{ in_array($selectedView, ['board', 'calendar'], true) ? $selectedView : 'list' }}">
+                        <input type="hidden" name="save_last_filter" value="1">
 
                         <div class="rounded-xl border border-border/80 bg-card/90 p-2.5 shadow-[inset_0_1px_0_color-mix(in_srgb,white_35%,transparent)]">
                             <p class="mb-1.5 text-[11px] leading-none uppercase tracking-[0.08em] text-muted-foreground">{{ __('task.search') }}</p>
@@ -197,33 +199,70 @@
                                     open: false,
                                     value: @js($selectedTag),
                                     options: @js($availableTags->values()),
+                                    search: '',
+                                    filteredOptions() {
+                                        const term = String(this.search ?? '').trim().toLowerCase();
+                                        if (term === '') return this.options;
+                                        return this.options.filter((tag) => String(tag).toLowerCase().includes(term));
+                                    },
                                 }"
                                 @keydown.escape.window="open = false"
                             >
                                 <input type="hidden" name="tag" x-model="value">
-                                <button type="button" @click="open = !open" class="input input-neon-select w-full text-left">
+                                <button
+                                    type="button"
+                                    @click="
+                                        open = !open;
+                                        if (open) {
+                                            $nextTick(() => $refs.tagSearch?.focus());
+                                        } else {
+                                            search = '';
+                                        }
+                                    "
+                                    class="input input-neon-select w-full text-left"
+                                >
                                     <span x-text="value ? `#${value}` : @js(__('task.all_tags'))"></span>
                                 </button>
 
-                                <div x-show="open" @click.outside="open = false" x-transition class="dropdown-panel">
-                                    <button
-                                        type="button"
-                                        class="dropdown-item"
-                                        :class="{ 'is-active': value === '' }"
-                                        @click="value = ''; open = false"
-                                    >
-                                        {{ __('task.all_tags') }}
-                                    </button>
+                                <div x-show="open" @click.outside="open = false; search = ''" x-transition class="dropdown-panel">
+                                    <div class="px-1 pb-1">
+                                        <input
+                                            x-ref="tagSearch"
+                                            type="text"
+                                            x-model="search"
+                                            class="input h-9 text-sm"
+                                            placeholder="{{ __('task.search_tags_placeholder') }}"
+                                            @keydown.stop
+                                        >
+                                    </div>
 
-                                    <template x-for="tag in options" :key="tag">
+                                    <div class="max-h-56 space-y-0.5 overflow-y-auto pr-1">
                                         <button
                                             type="button"
                                             class="dropdown-item"
-                                            :class="{ 'is-active': value === tag }"
-                                            @click="value = tag; open = false"
-                                            x-text="`#${tag}`"
-                                        ></button>
-                                    </template>
+                                            :class="{ 'is-active': value === '' }"
+                                            @click="value = ''; open = false; search = ''"
+                                        >
+                                            {{ __('task.all_tags') }}
+                                        </button>
+
+                                        <template x-for="tag in filteredOptions()" :key="tag">
+                                            <button
+                                                type="button"
+                                                class="dropdown-item"
+                                                :class="{ 'is-active': value === tag }"
+                                                @click="value = tag; open = false; search = ''"
+                                                x-text="`#${tag}`"
+                                            ></button>
+                                        </template>
+
+                                        <p
+                                            x-show="filteredOptions().length === 0"
+                                            class="px-3 py-2 text-xs text-muted-foreground"
+                                        >
+                                            {{ __('task.no_tags_match') }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -264,8 +303,16 @@
 
                         <div class="flex items-center gap-2">
                             <button type="submit" class="btn h-10 px-4">{{ __('task.filter') }}</button>
-                            <a href="{{ route('task.index') }}" class="inline-flex items-center text-sm text-muted-foreground hover:text-primary no-link-hover px-2">
+                            <a href="{{ route('task.index') }}" class="inline-flex h-10 items-center px-2 text-sm text-muted-foreground transition-colors duration-200 hover:text-primary no-link-hover">
                                 {{ __('task.reset') }}
+                            </a>
+                            <a
+                                href="{{ $lastFilterUrl ?? '#' }}"
+                                class="ml-auto inline-flex h-10 items-center rounded-lg border border-border/70 bg-card/45 px-3 text-sm text-muted-foreground transition-all duration-200 hover:border-primary/35 hover:text-foreground hover:shadow-[0_0_12px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] {{ $lastFilterUrl ? '' : 'pointer-events-none opacity-50' }}"
+                                aria-disabled="{{ $lastFilterUrl ? 'false' : 'true' }}"
+                                data-test="apply-last-filter"
+                            >
+                                {{ __('task.apply_last_filter') }}
                             </a>
                         </div>
                     </form>
@@ -314,9 +361,14 @@
                                         >
                                             <a href="{{ route('task.show', $task) }}" class="block" draggable="false">
                                                 <h4 class="font-semibold text-foreground leading-snug">{{ $task->title }}</h4>
-                                                @if ($task->due_date)
-                                                    <p class="mt-1 text-[11px] text-muted-foreground">{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</p>
-                                                @endif
+                                                <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                                    <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">
+                                                        {{ $task->priority?->label() ?? __('task.priority_medium') }}
+                                                    </x-task.priority-label>
+                                                    @if ($task->due_date)
+                                                        <p class="text-[11px] text-muted-foreground">{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</p>
+                                                    @endif
+                                                </div>
 
                                                 @if (!empty($task->tags) && count($task->tags))
                                                     <div class="mt-2 flex flex-wrap gap-1.5">
@@ -361,15 +413,15 @@
                             </div>
 
                             <div class="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
-                                <a href="{{ $previousMonthUrl }}" class="btn btn-outlined h-8 px-2 text-xs sm:flex-none sm:px-3">
+                                <a href="{{ $previousMonthUrl }}" class="btn btn-outlined inline-flex h-8 items-center justify-center px-2 text-center text-xs sm:flex-none sm:px-3">
                                     <span class="sm:hidden">&larr;</span>
                                     <span class="hidden sm:inline">{{ __('task.calendar_previous_month') }}</span>
                                 </a>
-                                <a href="{{ $currentMonthUrl }}" class="btn btn-outlined h-8 px-2 text-xs sm:flex-none sm:px-3">
+                                <a href="{{ $currentMonthUrl }}" class="btn btn-outlined inline-flex h-8 items-center justify-center px-2 text-center text-xs sm:flex-none sm:px-3">
                                     <span class="sm:hidden">{{ now()->format('j M') }}</span>
                                     <span class="hidden sm:inline">{{ __('task.calendar_today') }}</span>
                                 </a>
-                                <a href="{{ $nextMonthUrl }}" class="btn btn-outlined h-8 px-2 text-xs sm:flex-none sm:px-3">
+                                <a href="{{ $nextMonthUrl }}" class="btn btn-outlined inline-flex h-8 items-center justify-center px-2 text-center text-xs sm:flex-none sm:px-3">
                                     <span class="sm:hidden">&rarr;</span>
                                     <span class="hidden sm:inline">{{ __('task.calendar_next_month') }}</span>
                                 </a>
@@ -467,10 +519,13 @@
                                 @endif
                                 <h3 class="text-foreground text-lg">{{ $task->title }}</h3>
 
-                                <div class="mt-2">
+                                <div class="mt-2 flex flex-wrap items-center gap-2">
                                     <x-task.status-label :status="$task->status->value">
                                         {{ $task->status->label() }}
                                     </x-task.status-label>
+                                    <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">
+                                        {{ $task->priority?->label() ?? __('task.priority_medium') }}
+                                    </x-task.priority-label>
                                 </div>
 
                                 @if ($task->due_date)
@@ -521,6 +576,8 @@
                 let followerX = 0;
                 let followerY = 0;
                 let followerFrame = null;
+                let followerOffsetX = 0;
+                let followerOffsetY = 0;
                 const csrf = board.dataset.csrf;
                 const transparentDragImage = new Image();
                 transparentDragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -531,7 +588,7 @@
                         return;
                     }
 
-                    dragFollower.style.transform = `translate3d(${followerX + 18}px, ${followerY + 14}px, 0) rotate(-1.8deg)`;
+                    dragFollower.style.transform = `translate3d(${followerX - followerOffsetX}px, ${followerY - followerOffsetY}px, 0) rotate(-1.8deg)`;
                     followerFrame = requestAnimationFrame(renderFollower);
                 };
 
@@ -595,11 +652,104 @@
                     hint.classList.toggle('opacity-0', !visible);
                 };
 
+                let activeDropColumn = null;
+
                 const clearDropIndicators = () => {
                     board.querySelectorAll('.kanban-column').forEach((column) => {
                         column.classList.remove('is-over');
                         setColumnHint(column, false);
                     });
+                    activeDropColumn = null;
+                };
+
+                const setActiveDropColumn = (column) => {
+                    if (!column || activeDropColumn === column) return;
+
+                    board.querySelectorAll('.kanban-column').forEach((otherColumn) => {
+                        const isActive = otherColumn === column;
+                        otherColumn.classList.toggle('is-over', isActive);
+                        setColumnHint(otherColumn, isActive);
+                    });
+
+                    activeDropColumn = column;
+                };
+
+                const resolveColumnFromPointer = (event) => {
+                    const directColumn = event.target instanceof Element
+                        ? event.target.closest('.kanban-column')
+                        : null;
+                    if (directColumn) {
+                        return directColumn;
+                    }
+
+                    const columns = Array.from(board.querySelectorAll('.kanban-column'));
+                    if (columns.length === 0) return null;
+
+                    const pointerX = event.clientX;
+                    let nearestColumn = null;
+                    let smallestDistance = Number.POSITIVE_INFINITY;
+
+                    columns.forEach((column) => {
+                        const rect = column.getBoundingClientRect();
+                        const distance = pointerX < rect.left
+                            ? rect.left - pointerX
+                            : pointerX > rect.right
+                                ? pointerX - rect.right
+                                : 0;
+
+                        if (distance < smallestDistance) {
+                            smallestDistance = distance;
+                            nearestColumn = column;
+                        }
+                    });
+
+                    return nearestColumn;
+                };
+
+                const dropCardToColumn = async (column) => {
+                    if (!draggedCard || !column) return;
+
+                    const zone = column.querySelector('.kanban-dropzone');
+                    if (!zone) return;
+
+                    const sourceColumn = draggedCard.closest('.kanban-column');
+                    const sourceZone = sourceColumn?.querySelector('.kanban-dropzone');
+                    const previousNextSibling = draggedCard.nextElementSibling;
+                    const targetStatus = column.dataset.status;
+                    const sourceStatus = sourceColumn?.dataset.status;
+
+                    if (!targetStatus || targetStatus === sourceStatus) return;
+
+                    zone.appendChild(draggedCard);
+                    refreshColumnState(sourceColumn);
+                    refreshColumnState(column);
+
+                    try {
+                        const response = await fetch(draggedCard.dataset.updateUrl, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ status: targetStatus }),
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Update failed');
+                        }
+                    } catch (error) {
+                        if (sourceZone) {
+                            if (previousNextSibling && previousNextSibling.parentElement === sourceZone) {
+                                sourceZone.insertBefore(draggedCard, previousNextSibling);
+                            } else {
+                                sourceZone.appendChild(draggedCard);
+                            }
+                        }
+
+                        refreshColumnState(sourceColumn);
+                        refreshColumnState(column);
+                    }
                 };
 
                 board.querySelectorAll('.kanban-card').forEach((card) => {
@@ -622,11 +772,16 @@
                         dragFollower = card.cloneNode(true);
                         dragFollower.classList.add('drag-follower');
                         dragFollower.style.width = `${card.offsetWidth}px`;
-                        document.body.appendChild(dragFollower);
+
+                        const cardRect = card.getBoundingClientRect();
+                        const hasPointerPosition = Number.isFinite(event.clientX) && Number.isFinite(event.clientY) && (event.clientX !== 0 || event.clientY !== 0);
+                        followerOffsetX = hasPointerPosition ? Math.max(0, event.clientX - cardRect.left) : (cardRect.width / 2);
+                        followerOffsetY = hasPointerPosition ? Math.max(0, event.clientY - cardRect.top) : (cardRect.height / 2);
 
                         followerX = event.clientX || 0;
                         followerY = event.clientY || 0;
-                        dragFollower.style.transform = `translate3d(${followerX + 18}px, ${followerY + 14}px, 0) rotate(-1.8deg)`;
+                        dragFollower.style.transform = `translate3d(${followerX - followerOffsetX}px, ${followerY - followerOffsetY}px, 0) rotate(-1.8deg)`;
+                        document.body.appendChild(dragFollower);
                         window.addEventListener('dragover', updateFollowerPosition);
 
                         if (!followerFrame) {
@@ -642,73 +797,47 @@
                     });
                 });
 
+                board.addEventListener('dragover', (event) => {
+                    event.preventDefault();
+                    if (!draggedCard) return;
+
+                    const targetColumn = resolveColumnFromPointer(event);
+                    if (targetColumn) {
+                        setActiveDropColumn(targetColumn);
+                    }
+                });
+
+                board.addEventListener('drop', async (event) => {
+                    event.preventDefault();
+                    const targetColumn = activeDropColumn || resolveColumnFromPointer(event);
+                    clearDropIndicators();
+                    await dropCardToColumn(targetColumn);
+                });
+
                 board.querySelectorAll('.kanban-column').forEach((column) => {
                     const zone = column.querySelector('.kanban-dropzone');
                     if (!zone) return;
 
-                    zone.addEventListener('dragover', (event) => {
+                    column.addEventListener('dragover', (event) => {
                         event.preventDefault();
                         if (!draggedCard) return;
-
-                        board.querySelectorAll('.kanban-column').forEach((otherColumn) => {
-                            if (otherColumn !== column) {
-                                otherColumn.classList.remove('is-over');
-                                setColumnHint(otherColumn, false);
-                            }
-                        });
-                        column.classList.add('is-over');
-                        setColumnHint(column, true);
+                        setActiveDropColumn(column);
                     });
 
-                    zone.addEventListener('dragleave', () => {
-                        column.classList.remove('is-over');
-                        setColumnHint(column, false);
-                    });
-
-                    zone.addEventListener('drop', async (event) => {
-                        event.preventDefault();
-                        clearDropIndicators();
-
-                        if (!draggedCard) return;
-
-                        const sourceColumn = draggedCard.closest('.kanban-column');
-                        const sourceZone = sourceColumn?.querySelector('.kanban-dropzone');
-                        const previousNextSibling = draggedCard.nextElementSibling;
-                        const targetStatus = column.dataset.status;
-                        const sourceStatus = sourceColumn?.dataset.status;
-
-                        if (!targetStatus || targetStatus === sourceStatus) return;
-
-                        zone.appendChild(draggedCard);
-                        refreshColumnState(sourceColumn);
-                        refreshColumnState(column);
-
-                        try {
-                            const response = await fetch(draggedCard.dataset.updateUrl, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': csrf,
-                                    'Accept': 'application/json',
-                                },
-                                body: JSON.stringify({ status: targetStatus }),
-                            });
-
-                            if (!response.ok) {
-                                throw new Error('Update failed');
-                            }
-                        } catch (error) {
-                            if (sourceZone) {
-                                if (previousNextSibling && previousNextSibling.parentElement === sourceZone) {
-                                    sourceZone.insertBefore(draggedCard, previousNextSibling);
-                                } else {
-                                    sourceZone.appendChild(draggedCard);
-                                }
-                            }
-
-                            refreshColumnState(sourceColumn);
-                            refreshColumnState(column);
+                    column.addEventListener('dragleave', (event) => {
+                        if (event.relatedTarget && column.contains(event.relatedTarget)) return;
+                        if (activeDropColumn === column) {
+                            activeDropColumn = null;
+                            column.classList.remove('is-over');
+                            setColumnHint(column, false);
                         }
+                    });
+
+                    column.addEventListener('drop', async (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        clearDropIndicators();
+                        await dropCardToColumn(column);
                     });
                 });
             })();

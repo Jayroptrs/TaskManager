@@ -22,9 +22,10 @@ return [
     'no_activity' => 'Nog geen activiteit beschikbaar.',
     'status_distribution' => 'Statusverdeling',
     'status_distribution_sub' => 'Huidige spreiding van je taken.',
-    'steps_progress' => 'Stappen voortgang',
+    'steps_progress' => 'Checklist voortgang',
     'steps_progress_sub' => 'Voltooide checklist-items binnen je taken.',
     'top_tags' => 'Top tags',
     'top_tags_sub' => 'Meest gebruikte labels in je taken.',
+    'top_tags_hint' => 'Tip: gebruik tags om sneller te zoeken en filteren in je takenoverzicht.',
     'no_tags' => 'Nog geen tags toegevoegd.',
 ];

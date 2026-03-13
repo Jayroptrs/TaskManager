@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\TaskPriority;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\DB;
@@ -16,9 +17,12 @@ class CreateTask
     public function handle(array $attributes)
     {
         $data = collect($attributes)->only([
-            'title', 'description', 'status', 'due_date', 'links', 'tags'
+            'title', 'description', 'status', 'priority', 'due_date', 'links', 'tags'
         ])->toArray();
 
+        $data['priority'] = in_array($data['priority'] ?? null, TaskPriority::values(), true)
+            ? $data['priority']
+            : TaskPriority::MEDIUM->value;
         $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
         $remindersEnabled = (bool) ($attributes['reminders_enabled'] ?? true);
         $data['reminder_days'] = $this->normalizeReminderDays($attributes['reminder_days'] ?? null, $remindersEnabled, [7, 3, 1]);

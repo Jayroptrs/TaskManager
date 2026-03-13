@@ -1,5 +1,10 @@
 @props(['task' => new App\Models\Task()])
 @php
+    $panelClass = 'rounded-xl border border-border/80 bg-card/55 p-3';
+    $subPanelClass = 'rounded-xl border border-border/70 bg-card/60 p-3';
+    $removeItemButtonClass = 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/80 bg-card/70 text-muted-foreground transition-all duration-200 hover:border-primary/45 hover:text-primary hover:shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_24%,transparent)] focus-visible:border-primary/55 focus-visible:text-primary focus-visible:shadow-[0_0_16px_color-mix(in_srgb,var(--color-primary)_28%,transparent)]';
+    $addItemButtonClass = 'btn btn-outlined h-10 w-10 shrink-0 px-0 text-base focus-visible:border-primary/55 focus-visible:shadow-[0_0_16px_color-mix(in_srgb,var(--color-primary)_30%,transparent)]';
+
     $initialReminderDays = collect(old('reminder_days', $task->reminder_days ?? [7, 3, 1]))
         ->map(fn ($day) => (int) $day)
         ->filter(fn ($day) => $day >= 0)
@@ -12,16 +17,20 @@
     if ($initialRemindersEnabledRaw === null) {
         $initialRemindersEnabled = $task->exists
             ? collect($task->reminder_days ?? [1, 3, 7])->isNotEmpty()
-            : true;
+            : false;
     } else {
         $initialRemindersEnabled = in_array((string) $initialRemindersEnabledRaw, ['1', 'true', 'on'], true);
     }
+
+    $initialRemoveImageRequested = in_array((string) old('remove_image', '0'), ['1', 'true', 'on'], true)
+        && $task->hasUploadedImage();
 @endphp
 
 <x-modal name="{{ $task->exists ? 'edit-task' : 'create-task' }}" title="{{ $task->exists ? __('task.modal_edit_title') : __('task.modal_create_title') }}" maxWidth="max-w-4xl">
     <form
         x-data="{
         status: @js(old('status', $task->status->value)),
+        priority: @js(old('priority', $task->priority?->value ?? \App\TaskPriority::MEDIUM->value)),
         dueDate: @js(old('due_date', $task->due_date?->toDateString())),
         newLink: '',
         links: @js(old('links', $task->links ?? [])),
@@ -32,6 +41,34 @@
         remindersEnabled: @js((bool) $initialRemindersEnabled),
         reminderDays: @js($initialReminderDays === [] ? [1, 3, 7] : $initialReminderDays),
         newReminderDay: '',
+        hasUploadedImage: @js((bool) $task->hasUploadedImage()),
+        originalImageUrl: @js($task->imageUrl()),
+        imageUrl: @js($task->imageUrl()),
+        imageObjectUrl: null,
+        removeImageRequested: @js((bool) $initialRemoveImageRequested),
+        markImageForRemoval() {
+            if (!this.hasUploadedImage) return;
+            this.removeImageRequested = true;
+            this.imageUrl = null;
+        },
+        undoImageRemoval() {
+            this.removeImageRequested = false;
+            this.imageUrl = this.originalImageUrl;
+        },
+        handleImageChange(event) {
+            const file = event.target.files?.[0] ?? null;
+            if (!file) {
+                this.imageUrl = this.removeImageRequested ? null : this.originalImageUrl;
+                return;
+            }
+
+            this.removeImageRequested = false;
+            if (this.imageObjectUrl) {
+                URL.revokeObjectURL(this.imageObjectUrl);
+            }
+            this.imageObjectUrl = URL.createObjectURL(file);
+            this.imageUrl = this.imageObjectUrl;
+        },
         addReminderDay() {
             if (!this.remindersEnabled) {
                 return;
@@ -56,7 +93,34 @@
                 this.reminderDays = [1, 3, 7];
             }
         },
+        addStep() {
+            const value = String(this.newStep ?? '').trim();
+            if (value.length === 0) {
+                return;
+            }
+            this.steps.push({ description: value, completed: false, assigned_user_id: null });
+            this.newStep = '';
+        },
+        addLink() {
+            const value = String(this.newLink ?? '').trim();
+            if (value.length === 0) {
+                return;
+            }
+            this.links.push(value);
+            this.newLink = '';
+        },
+        addTag() {
+            const value = String(this.newTag ?? '').trim();
+            if (value.length === 0) {
+                return;
+            }
+            if (!this.tags.includes(value)) {
+                this.tags.push(value);
+            }
+            this.newTag = '';
+        },
         }"
+        @keydown.escape.stop="$dispatch('close-modal')"
         @task-create-due-date-selected.window="dueDate = $event.detail?.dueDate ?? dueDate"
         method="POST"
         action="{{ $task->exists ? route('task.update', $task) : route('task.store') }}"
@@ -68,7 +132,7 @@
             @method('PATCH')
         @endif
 
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-5">
             <x-form.field
                 :label="__('task.title_label')"
                 name="title"
@@ -77,29 +141,59 @@
                 required
                 :value="$task->title"/>
 
-            <div class="space-y-2">
-                <label for="status" class="label">{{ __('task.status') }}</label>
+            <div class="grid gap-4 lg:grid-cols-2">
+                <div class="{{ $panelClass }} space-y-2">
+                    <label for="status" class="label">{{ __('task.status') }}</label>
 
-                <div class="flex flex-wrap gap-2 sm:gap-3">
-                    @foreach (App\TaskStatus::cases() as $status)
-                        <button
-                        type="button"
-                        @click="status = @js($status->value)"
-                        class="btn flex-1 h-10 whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
-                        :class="{'btn-outlined': status!== @js($status->value)}"
-                        >
-                            {{ $status->label() }}
-                        </button>
-                    @endforeach
+                    <div class="flex flex-wrap gap-2 sm:gap-3">
+                        @foreach (App\TaskStatus::cases() as $status)
+                            <button
+                            type="button"
+                            @click="status = @js($status->value)"
+                            class="btn flex-1 h-10 whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
+                            :class="{'btn-outlined': status!== @js($status->value)}"
+                            >
+                                {{ $status->label() }}
+                            </button>
+                        @endforeach
 
-                    <input hidden type="text" name="status" :value="status" class="input">
+                        <input hidden type="text" name="status" :value="status" class="input">
+                    </div>
+
+                    <x-form.error name="status" />
                 </div>
 
-                <x-form.error name="status" />
+                <div class="{{ $panelClass }} space-y-2">
+                    <label for="priority" class="label">{{ __('task.priority') }}</label>
+
+                    <div class="flex flex-wrap gap-2 sm:gap-3">
+                        @foreach (App\TaskPriority::cases() as $priority)
+                            <button
+                                type="button"
+                                @click="priority = @js($priority->value)"
+                                class="btn flex-1 h-10 whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
+                                :class="{'btn-outlined': priority!== @js($priority->value)}"
+                            >
+                                {{ $priority->label() }}
+                            </button>
+                        @endforeach
+
+                        <input type="hidden" name="priority" :value="priority">
+                    </div>
+
+                    <x-form.error name="priority" />
+                </div>
             </div>
 
-            <div class="space-y-4">
-                <div class="w-full">
+            <x-form.field
+                :label="__('task.description_label')"
+                name="description"
+                type="textarea"
+                :placeholder="__('task.description_placeholder')"
+                :value="$task->description"/>
+
+            <div class="{{ $panelClass }} space-y-3">
+                <div>
                     <x-form.field
                         :label="__('task.due_date_label')"
                         name="due_date"
@@ -111,7 +205,7 @@
                 </div>
 
                 <div
-                    class="space-y-2 w-full"
+                    class="w-full space-y-2"
                     x-show="String(dueDate ?? '').trim() !== ''"
                     x-transition:enter="transition-all duration-300 ease-out"
                     x-transition:enter-start="opacity-0 -translate-y-2"
@@ -122,7 +216,7 @@
                     x-cloak
                 >
                     <label class="label">{{ __('task.reminders_label') }}</label>
-                    <div class="rounded-xl border border-border/80 bg-card/70 p-2.5">
+                    <div class="rounded-xl border border-border/80 bg-card/70 p-3">
                         <div class="flex items-center justify-between gap-2">
                             <p class="text-xs font-medium text-foreground/85" x-text="remindersEnabled ? @js(__('task.reminders_on')) : @js(__('task.reminders_off'))"></p>
                             <button
@@ -191,34 +285,48 @@
                 </div>
             </div>
 
-            <x-form.field
-                :label="__('task.description_label')"
-                name="description"
-                type="textarea"
-                :placeholder="__('task.description_placeholder')"
-                :value="$task->description"/>
+            <div class="{{ $panelClass }} space-y-2">
+                <label for="image" class="label">{{ __('task.image_label') }}</label>
 
-                <div class="space-y-2">
-                    <label for="image" class="label">{{ __('task.image_label') }}</label>
-
-                    @if ($task->imageUrl())
-                        <div class="space-y-2">
-                            <img src="{{ $task->imageUrl() }}" alt="" class="w-full h-auto object-cover rounded-lg">
-                        </div>
-
-                        <button class="btn btn-outlined h-10 w-full" form="delete-image-form">{{ __('task.remove_image') }}</button>
-                    @endif
-
-                    <input type="file" name="image" accept="image/*">
-                    <x-form.error name="image"/>
+                <div class="space-y-2" x-show="imageUrl" x-cloak>
+                    <img :src="imageUrl" src="{{ $task->imageUrl() }}" alt="" class="h-auto w-full rounded-lg object-cover">
                 </div>
 
-                <div>
-                    <fieldset class="space-y-3">
+                <template x-if="hasUploadedImage && !removeImageRequested">
+                    <button type="button" @click="markImageForRemoval()" class="btn btn-outlined h-10 w-full">
+                        {{ __('task.remove_image') }}
+                    </button>
+                </template>
+                <template x-if="hasUploadedImage && removeImageRequested">
+                    <div class="space-y-2 rounded-lg border border-border/70 bg-card/70 p-2.5">
+                        <p class="text-xs text-muted-foreground">{{ __('task.uploaded_image_remove_pending_hint') }}</p>
+                        <button type="button" @click="undoImageRemoval()" class="btn btn-outlined h-9 w-full text-xs">
+                            {{ __('task.undo_image_remove') }}
+                        </button>
+                    </div>
+                </template>
+                <template x-if="!hasUploadedImage">
+                    <p class="text-xs text-muted-foreground">{{ __('task.default_image_locked_hint') }}</p>
+                </template>
+
+                <input type="file" name="image" accept="image/*" @change="handleImageChange($event)">
+                <input type="hidden" name="remove_image" :value="removeImageRequested ? 1 : 0">
+                <x-form.error name="image"/>
+            </div>
+
+            <div class="{{ $panelClass }} space-y-3">
+                <div class="space-y-1">
+                    <h3 class="label">{{ __('task.structure_section') }}</h3>
+                    <p class="text-xs text-muted-foreground">{{ __('task.keyboard_shortcuts_hint') }}</p>
+                </div>
+
+                <div class="grid gap-4 lg:grid-cols-3">
+                    <div class="{{ $subPanelClass }}">
+                    <fieldset class="space-y-2.5">
                         <label class="label">{{ __('task.steps') }}</label>
 
                         <template x-for="(step, index) in steps" :key="step.id || index">
-                            <div class="flex items-start gap-3">
+                            <div class="flex items-start gap-2.5">
                                 <div class="flex-1">
                                     <x-form.input
                                         type="text"
@@ -241,134 +349,134 @@
                                 </div>
 
                                 <button
-                                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-lg font-bold leading-none transition-transform duration-300 hover:scale-125 hover:rotate-180"
+                                    class="{{ $removeItemButtonClass }}"
                                     type="button"
                                     :aria-label="@js(__('task.remove_step'))"
                                     @click="steps.splice(index, 1)"
                                 >
-                                    &#10006;
+                                    <svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
                                 </button>
                             </div>
                         </template>
 
-                    <div class="flex items-center gap-3">
-                        <x-form.input
-                            type="text"
-                            x-model="newStep"
-                            id="new-step"
-                            placeholder="{{ __('task.steps_placeholder') }}"
-                            class="flex-1"
-                            spellcheck="false"
-                        />
+                        <div class="flex items-center gap-2.5">
+                            <x-form.input
+                                type="text"
+                                x-model="newStep"
+                                id="new-step"
+                                placeholder="{{ __('task.steps_placeholder') }}"
+                                class="flex-1"
+                                spellcheck="false"
+                                @keydown.enter.prevent="addStep()"
+                            />
 
-                        <button
-                            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-lg font-bold leading-none transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-105 hover:shadow-[0_10px_25px_rgba(99,102,241,0.35)]"
-                            type="button"
-                            @click="steps.push({description: newStep.trim(), completed: false, assigned_user_id: null});
-                            newStep = '';"
-                            :disabled="newStep.trim().length === 0"
-                            :aria-label="@js(__('task.add_step'))"
-                            >
-                            +
-                        </button>
+                            <button
+                                class="{{ $addItemButtonClass }}"
+                                type="button"
+                                @click="addStep()"
+                                :disabled="newStep.trim().length === 0"
+                                :aria-label="@js(__('task.add_step'))"
+                                >
+                                +
+                            </button>
+                        </div>
+                    </fieldset>
                     </div>
-                </fieldset>
-            </div>
 
-                <div>
-                    <fieldset class="space-y-3">
+                    <div class="{{ $subPanelClass }}">
+                    <fieldset class="space-y-2.5">
                         <label class="label">{{ __('task.links') }}</label>
 
-                        <template x-for="(link, index) in links" :key="link">
-                            <div class="flex items-center gap-3">
+                        <template x-for="(link, index) in links" :key="`${link}-${index}`">
+                            <div class="flex items-center gap-2.5">
                                 <x-form.input type="text" readonly name="links[]" x-model="link" class="flex-1 cursor-default opacity-80" />
 
                                 <button
-                                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-lg font-bold leading-none transition-transform duration-300 hover:scale-130 hover:rotate-180"
-                                type="button"
-                                :aria-label="@js(__('task.remove_link'))"
-                                @click="links.splice(index, 1)"
+                                    class="{{ $removeItemButtonClass }}"
+                                    type="button"
+                                    :aria-label="@js(__('task.remove_link'))"
+                                    @click="links.splice(index, 1)"
                                 >
-                                &#10006;
-                            </button>
-                        </div>
-                    </template>
+                                    <svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
 
-                    <div class="flex items-center gap-3">
-                        <x-form.input
-                            type="url"
-                            x-model="newLink"
-                            id="new-link"
-                            data-test="new-link"
-                            placeholder="https://example.com"
-                            autocomplete="url"
-                            class="flex-1"
-                            spellcheck="false"
-                        />
-
-                        <button
-                            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-lg font-bold leading-none transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-105 hover:shadow-[0_10px_25px_rgba(99,102,241,0.35)]"
-                            type="button" @click="links.push(newLink.trim()); newLink = '';"
-                            :disabled="newLink.trim().length === 0"
-                            :aria-label="@js(__('task.add_link'))"
-                            >
-                            +
-                        </button>
-                    </div>
-                </fieldset>
-            </div>
-
-            <div>
-                <fieldset class="space-y-3">
-                    <label class="label">{{ __('task.tags') }}</label>
-
-                    <template x-for="(tag, index) in tags" :key="`${tag}-${index}`">
-                        <div class="flex items-center gap-3">
-                            <x-form.input type="text" readonly name="tags[]" x-model="tag" class="flex-1 cursor-default opacity-80" />
+                        <div class="flex items-center gap-2.5">
+                            <x-form.input
+                                type="url"
+                                x-model="newLink"
+                                id="new-link"
+                                data-test="new-link"
+                                placeholder="{{ __('task.link_placeholder') }}"
+                                autocomplete="url"
+                                class="flex-1"
+                                spellcheck="false"
+                                @keydown.enter.prevent="addLink()"
+                            />
 
                             <button
-                                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-lg font-bold leading-none transition-transform duration-300 hover:scale-130 hover:rotate-180"
+                                class="{{ $addItemButtonClass }}"
                                 type="button"
-                                :aria-label="@js(__('task.remove_tag'))"
-                                @click="tags.splice(index, 1)"
-                            >
-                                &#10006;
+                                @click="addLink()"
+                                :disabled="newLink.trim().length === 0"
+                                :aria-label="@js(__('task.add_link'))"
+                                >
+                                +
                             </button>
                         </div>
-                    </template>
-
-                    <div class="flex items-center gap-3">
-                        <x-form.input
-                            type="text"
-                            x-model="newTag"
-                            id="new-tag"
-                            placeholder="{{ __('task.tags_placeholder') }}"
-                            class="flex-1"
-                            spellcheck="false"
-                        />
-
-                        <button
-                            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-lg font-bold leading-none transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-105 hover:shadow-[0_10px_25px_rgba(99,102,241,0.35)]"
-                            type="button"
-                            @click="
-                                const value = newTag.trim();
-                                if (value.length > 0 && !tags.includes(value)) {
-                                    tags.push(value);
-                                }
-                                newTag = '';
-                            "
-                            :disabled="newTag.trim().length === 0"
-                            :aria-label="@js(__('task.add_tag'))"
-                        >
-                            +
-                        </button>
+                    </fieldset>
                     </div>
-                </fieldset>
-            </div>
 
-            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-x-5">
-                <button type="button" @click="$dispatch('close-modal')">{{ __('task.cancel') }}</button>
-                <button type="submit" class="btn">{{ __('task.save') }}</button>
+                    <div class="{{ $subPanelClass }}">
+                    <fieldset class="space-y-2.5">
+                        <label class="label">{{ __('task.tags') }}</label>
+
+                        <template x-for="(tag, index) in tags" :key="`${tag}-${index}`">
+                            <div class="flex items-center gap-2.5">
+                                <x-form.input type="text" readonly name="tags[]" x-model="tag" class="flex-1 cursor-default opacity-80" />
+
+                                <button
+                                    class="{{ $removeItemButtonClass }}"
+                                    type="button"
+                                    :aria-label="@js(__('task.remove_tag'))"
+                                    @click="tags.splice(index, 1)"
+                                >
+                                    <svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+
+                        <div class="flex items-center gap-2.5">
+                            <x-form.input
+                                type="text"
+                                x-model="newTag"
+                                id="new-tag"
+                                placeholder="{{ __('task.tags_placeholder') }}"
+                                class="flex-1"
+                                spellcheck="false"
+                                @keydown.enter.prevent="addTag()"
+                            />
+
+                            <button
+                                class="{{ $addItemButtonClass }}"
+                                type="button"
+                                @click="addTag()"
+                                :disabled="newTag.trim().length === 0"
+                                :aria-label="@js(__('task.add_tag'))"
+                            >
+                                +
+                            </button>
+                        </div>
+                    </fieldset>
+                    </div>
+                </div>
             </div>
 
             @if (! $task->exists)
@@ -376,16 +484,17 @@
                     {{ __('task.create_invite_after_create_hint') }}
                 </p>
             @endif
+
+            <div class="sticky bottom-0 z-20 mt-2 pt-2">
+                <div class="ml-auto w-fit rounded-2xl border border-border/55 bg-[color:color-mix(in_srgb,var(--color-card)_44%,transparent)] px-3 py-2.5 backdrop-blur-xl shadow-[0_-10px_24px_color-mix(in_srgb,black_10%,transparent),0_0_18px_color-mix(in_srgb,var(--color-primary)_14%,transparent)]">
+                    <div class="flex flex-col-reverse items-center justify-end gap-3 sm:flex-row sm:gap-x-4">
+                        <button type="button" @click="$dispatch('close-modal')" class="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground">
+                            {{ __('task.cancel') }}
+                        </button>
+                        <button type="submit" class="btn">{{ __('task.save') }}</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
-    
-    @if ($task->image_path)
-        <form method="POST" action="{{ route('task.image.destroy', $task) }}" id="delete-image-form">
-            @csrf
-            @method('DELETE')
-        </form>
-    @endif
 </x-modal>
-
-
-

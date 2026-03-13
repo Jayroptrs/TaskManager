@@ -12,12 +12,19 @@ class TaskImageController extends Controller
     {
         Gate::authorize('manageTask', $task);
 
-        if ($task->hasUploadedImage()) {
-            Storage::disk('public')->delete($task->image_path);
+        if (! $task->hasUploadedImage()) {
+            return back()->with('error', __('messages.task_default_image_locked'));
         }
-        
-        $task->update(['image_path' => null]);
 
-        return back();
+        Storage::disk('public')->delete($task->image_path);
+
+        $defaultImages = collect(config('tasks.default_images', []))
+            ->filter(fn ($path) => is_string($path) && $path !== '')
+            ->values();
+        $fallbackImage = $defaultImages->isNotEmpty() ? $defaultImages->random() : null;
+
+        $task->update(['image_path' => $fallbackImage]);
+
+        return back()->with('success', __('messages.task_image_reset_to_default'));
     }
 }

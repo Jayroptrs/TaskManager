@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 11</title>
+  <desc id="desc">Deep navy gradient with diagonal bands.</desc>
+  <defs>
+    <linearGradient id="bg11" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#172554"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg11)"/>
+  <path d="M-80 470 L310 120 L470 120 L80 470 Z" fill="#60a5fa" opacity="0.22"/>
+  <path d="M310 560 L710 170 L860 170 L460 560 Z" fill="#93c5fd" opacity="0.18"/>
+  <path d="M720 560 L1050 250 L1180 250 L850 560 Z" fill="#dbeafe" opacity="0.16"/>
+  <circle cx="930" cy="120" r="80" fill="#eff6ff" opacity="0.16"/>
+</svg>

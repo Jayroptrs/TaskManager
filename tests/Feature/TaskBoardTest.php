@@ -94,6 +94,7 @@ test('user can create a task and tags are normalized', function () {
         'title' => 'Nieuwe taak',
         'description' => 'Omschrijving',
         'status' => 'pending',
+        'priority' => 'high',
         'tags' => ['#Nieuw', ' Idee ', 'NIEUW'],
         'links' => ['https://example.com'],
     ]);
@@ -104,8 +105,77 @@ test('user can create a task and tags are normalized', function () {
 
     expect($task)->not->toBeNull();
     expect($task->title)->toBe('Nieuwe taak');
+    expect($task->priority->value)->toBe('high');
     expect($task->tags)->toBe(['nieuw', 'idee']);
     expect($task->image_path)->toBeIn(config('tasks.default_images'));
+});
+
+test('task links with www prefix are normalized to https on create', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('task.store'), [
+        'title' => 'Taak met link zonder schema',
+        'description' => 'Omschrijving',
+        'status' => 'pending',
+        'links' => ['www.voorbeeld.com'],
+    ])->assertRedirect(route('task.index'));
+
+    $task = Task::query()->latest('id')->first();
+
+    expect($task)->not->toBeNull();
+    expect($task->links)->toBe(['https://www.voorbeeld.com']);
+});
+
+test('task links with www prefix are normalized to https on update', function () {
+    $user = User::factory()->create();
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'pending',
+        'links' => ['https://old.example.com'],
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('task.update', $task), [
+            'title' => 'Aangepaste taak',
+            'description' => 'Omschrijving',
+            'status' => 'pending',
+            'links' => ['www.example.com/docs'],
+            'tags' => [],
+        ])
+        ->assertStatus(302);
+
+    expect($task->fresh()->links)->toBe(['https://www.example.com/docs']);
+});
+
+test('create modal link placeholder follows active locale', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['locale' => 'nl'])
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee('placeholder="www.voorbeeld.com"', false);
+
+    $this->actingAs($user)
+        ->withSession(['locale' => 'en'])
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee('placeholder="www.example.com"', false);
+});
+
+test('task priority defaults to medium when omitted on create', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('task.store'), [
+        'title' => 'Taak zonder prioriteit',
+        'description' => 'Omschrijving',
+        'status' => 'pending',
+    ])->assertRedirect(route('task.index'));
+
+    $task = Task::query()->latest('id')->first();
+
+    expect($task)->not->toBeNull();
+    expect($task->priority->value)->toBe('medium');
 });
 
 test('user cannot create more open tasks than configured limit', function () {
@@ -156,6 +226,58 @@ test('tag filter is case insensitive and works with hash prefix', function () {
         ->assertOk()
         ->assertSee('Taak A')
         ->assertSee('Taak B');
+});
+
+test('filter submit stores last filter in session and apply button uses it', function () {
+    $user = User::factory()->create();
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Team urgent taak',
+        'tags' => ['urgent'],
+    ]);
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Andere taak',
+        'tags' => ['later'],
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('task.index', [
+            'q' => 'Team',
+            'tag' => 'urgent',
+            'work' => 'team',
+            'sort' => 'oldest',
+            'save_last_filter' => 1,
+        ]))
+        ->assertOk();
+
+    $lastFilter = session('tasks.last_filter');
+
+    expect($lastFilter)->toBeArray();
+    expect($lastFilter)->toMatchArray([
+        'q' => 'Team',
+        'tag' => 'urgent',
+        'work' => 'team',
+        'sort' => 'oldest',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee(e(route('task.index', $lastFilter)), false)
+        ->assertSee(__('task.apply_last_filter'));
+});
+
+test('apply last filter button is disabled when no previous filter exists', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertSee('data-test="apply-last-filter"', false)
+        ->assertSee('aria-disabled="true"', false);
 });
 
 test('user can delete own task', function () {
@@ -217,23 +339,65 @@ test('owner can remove uploaded task image via dedicated endpoint', function () 
         ->delete(route('task.image.destroy', $task))
         ->assertRedirect();
 
-    expect($task->fresh()->image_path)->toBeNull();
+    expect($task->fresh()->image_path)->toBeIn(config('tasks.default_images'));
     Storage::disk('public')->assertMissing($imagePath);
 });
 
-test('owner can remove default catalog image path without touching public storage', function () {
+test('owner can mark uploaded task image for removal via update flow and save changes', function () {
     Storage::fake('public');
     $owner = User::factory()->create();
+    $imagePath = 'ideas/remove-via-update.jpg';
+    Storage::disk('public')->put($imagePath, 'image-content');
     $task = Task::factory()->create([
         'user_id' => $owner->id,
-        'image_path' => 'images/default-task-cover-1.svg',
+        'image_path' => $imagePath,
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($owner)
+        ->patch(route('task.update', $task), [
+            'title' => 'Taak met verwijderde afbeelding',
+            'description' => 'Omschrijving',
+            'status' => 'pending',
+            'remove_image' => 1,
+            'links' => [],
+            'tags' => [],
+        ])
+        ->assertRedirect();
+
+    expect($task->fresh()->image_path)->toBeIn(config('tasks.default_images'));
+    Storage::disk('public')->assertMissing($imagePath);
+});
+
+test('owner cannot remove default catalog image path via dedicated endpoint', function () {
+    Storage::fake('public');
+    $owner = User::factory()->create();
+    $defaultImagePath = (string) (config('tasks.default_images')[0] ?? 'images/task-default-1.svg');
+    $task = Task::factory()->create([
+        'user_id' => $owner->id,
+        'image_path' => $defaultImagePath,
     ]);
 
     $this->actingAs($owner)
         ->delete(route('task.image.destroy', $task))
         ->assertRedirect();
 
-    expect($task->fresh()->image_path)->toBeNull();
+    expect($task->fresh()->image_path)->toBe($defaultImagePath);
+});
+
+test('edit modal hides remove image button for default task image and shows lock hint', function () {
+    $owner = User::factory()->create();
+    $defaultImagePath = (string) (config('tasks.default_images')[0] ?? 'images/task-default-1.svg');
+    $task = Task::factory()->create([
+        'user_id' => $owner->id,
+        'image_path' => $defaultImagePath,
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('task.show', $task))
+        ->assertOk()
+        ->assertSee(__('task.default_image_locked_hint'))
+        ->assertSee('hasUploadedImage: false', false);
 });
 
 test('guest cannot remove task image endpoint', function () {
@@ -490,6 +654,25 @@ test('updating task to completed marks provided steps as completed', function ()
     expect($freshTask->steps()->where('completed', false)->count())->toBe(0);
 });
 
+test('user can update task priority', function () {
+    $user = User::factory()->create();
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'priority' => 'low',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('task.update', $task), [
+            'title' => 'Prioriteit aangepast',
+            'description' => 'Omschrijving',
+            'status' => 'pending',
+            'priority' => 'high',
+        ])
+        ->assertStatus(302);
+
+    expect($task->fresh()->priority->value)->toBe('high');
+});
+
 test('work filter can separate solo and team tasks', function () {
     $owner = User::factory()->create();
     $collaborator = User::factory()->create();
@@ -654,6 +837,33 @@ test('sort can order tasks by latest deadline first', function () {
         ->assertSeeInOrder(['Deadline latest', 'Deadline early', 'No deadline latest sort']);
 });
 
+test('sort can order tasks by highest priority first', function () {
+    $user = User::factory()->create();
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Priority medium task',
+        'priority' => 'medium',
+    ]);
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Priority low task',
+        'priority' => 'low',
+    ]);
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Priority high task',
+        'priority' => 'high',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('task.index', ['sort' => 'priority_high']))
+        ->assertOk()
+        ->assertSeeInOrder(['Priority high task', 'Priority medium task', 'Priority low task']);
+});
+
 test('activity log is only visible to task owner', function () {
     $owner = User::factory()->create();
     $collaborator = User::factory()->create();
@@ -812,7 +1022,7 @@ test('open task limit blocks reopening completed task via update form', function
     expect($completedTask->fresh()->status->value)->toBe('completed');
 });
 
-test('admin viewer cannot mutate task of another user', function () {
+test('admin can mutate task of another user', function () {
     $admin = User::factory()->admin()->create();
     $owner = User::factory()->create();
     $task = Task::factory()->create([
@@ -826,22 +1036,30 @@ test('admin viewer cannot mutate task of another user', function () {
     ]);
 
     $this->actingAs($admin)
+        ->patch(route('step.update', $step))
+        ->assertStatus(302);
+
+    $this->actingAs($admin)
         ->patch(route('task.update', $task), [
             'title' => 'Admin update poging',
             'description' => 'Omschrijving',
             'status' => 'in_progress',
+            'steps' => [
+                ['description' => 'Nieuwe stap', 'completed' => false],
+            ],
         ])
-        ->assertForbidden();
+        ->assertStatus(302);
 
     $this->actingAs($admin)
         ->patchJson(route('task.status.update', $task), ['status' => 'completed'])
-        ->assertForbidden();
+        ->assertOk();
 
-    $this->actingAs($admin)
-        ->patch(route('step.update', $step))
-        ->assertForbidden();
+    expect($task->fresh()->status->value)->toBe('completed');
+    expect($task->fresh()->steps()->where('completed', false)->count())->toBe(0);
 
     $this->actingAs($admin)
         ->delete(route('task.destroy', $task))
-        ->assertForbidden();
+        ->assertRedirect(route('task.index'));
+
+    $this->assertDatabaseMissing('ideas', ['id' => $task->id]);
 });

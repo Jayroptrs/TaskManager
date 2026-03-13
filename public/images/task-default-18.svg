@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 18</title>
+  <desc id="desc">Muted plum gradient with grid blocks.</desc>
+  <defs>
+    <linearGradient id="bg18" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4a044e"/>
+      <stop offset="100%" stop-color="#a21caf"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg18)"/>
+  <rect x="120" y="100" width="160" height="130" rx="18" fill="#f5d0fe" opacity="0.16"/>
+  <rect x="300" y="100" width="220" height="130" rx="18" fill="#fae8ff" opacity="0.12"/>
+  <rect x="550" y="100" width="170" height="130" rx="18" fill="#f0abfc" opacity="0.14"/>
+  <rect x="750" y="100" width="250" height="130" rx="18" fill="#f5d0fe" opacity="0.14"/>
+  <rect x="170" y="320" width="860" height="190" rx="28" fill="#ffffff" opacity="0.08"/>
+</svg>

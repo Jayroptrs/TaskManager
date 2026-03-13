@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 14</title>
+  <desc id="desc">Golden gradient with arcs and large discs.</desc>
+  <defs>
+    <linearGradient id="bg14" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350f"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg14)"/>
+  <circle cx="170" cy="540" r="250" fill="#fde68a" opacity="0.18"/>
+  <circle cx="980" cy="120" r="170" fill="#fef3c7" opacity="0.14"/>
+  <path d="M220 470 C360 320 580 300 760 420" fill="none" stroke="#fcd34d" stroke-width="42" stroke-linecap="round" opacity="0.18"/>
+  <path d="M370 540 C560 390 770 370 980 500" fill="none" stroke="#fef3c7" stroke-width="28" stroke-linecap="round" opacity="0.14"/>
+</svg>

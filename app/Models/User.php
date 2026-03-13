@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Task;
 use App\Models\SupportMessage;
 use App\Models\SupportMessageReply;
+use App\Models\UserAuditLog;
 use App\Models\TaskComment;
 use App\Models\TaskCommentMention;
 use App\Models\TaskCollaborationRequest;
@@ -113,6 +114,16 @@ class User extends Authenticatable
             'id',
             'id'
         );
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(UserAuditLog::class, 'target_user_id');
+    }
+
+    public function performedAuditLogs(): HasMany
+    {
+        return $this->hasMany(UserAuditLog::class, 'actor_user_id');
     }
 
     public function unreadSupportReplies(): HasManyThrough

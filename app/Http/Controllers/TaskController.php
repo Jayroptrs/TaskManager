@@ -29,7 +29,7 @@ class TaskController extends Controller
             default => 'list',
         };
         $search = trim((string) $request->query('q', ''));
-        $sort = in_array($request->query('sort'), ['newest', 'oldest', 'deadline_soon', 'deadline_late'], true)
+        $sort = in_array($request->query('sort'), ['newest', 'oldest', 'deadline_soon', 'deadline_late', 'priority_high'], true)
             ? $request->query('sort')
             : 'newest';
         $selectedTag = ltrim(strtolower(trim((string) $request->query('tag', ''))), '#');
@@ -37,6 +37,30 @@ class TaskController extends Controller
         $due = in_array($request->query('due'), ['all', 'upcoming', 'overdue', 'none'], true)
             ? $request->query('due')
             : 'all';
+        $status = in_array($request->query('status'), TaskStatus::values(), true)
+            ? $request->query('status')
+            : null;
+
+        if ($request->boolean('save_last_filter')) {
+            $lastFilter = array_filter([
+                'q' => $search !== '' ? $search : null,
+                'sort' => $sort !== 'newest' ? $sort : null,
+                'tag' => $selectedTag !== '' ? $selectedTag : null,
+                'work' => $work !== 'all' ? $work : null,
+                'due' => $due !== 'all' ? $due : null,
+                'status' => $view !== 'board' ? $status : null,
+                'view' => $view !== 'list' ? $view : null,
+                'month' => $view === 'calendar' ? (string) $request->query('month', '') : null,
+            ], fn ($value) => $value !== null && $value !== '');
+
+            $request->session()->put('tasks.last_filter', $lastFilter);
+        }
+
+        $lastFilter = $request->session()->get('tasks.last_filter', []);
+        $lastFilterUrl = is_array($lastFilter) && $lastFilter !== []
+            ? route('task.index', $lastFilter)
+            : null;
+
         $hasTagsColumn = Schema::hasColumn('ideas', 'tags');
         $baseTasksQuery = Task::query()->visibleTo($user);
         $today = now()->startOfDay()->toDateString();
@@ -61,7 +85,7 @@ class TaskController extends Controller
         }
 
         $tasksQuery = (clone $baseTasksQuery)
-            ->when($view !== 'board' && in_array($request->status, TaskStatus::values()), fn ($query) => $query->where('status', $request->status))
+            ->when($view !== 'board' && $status !== null, fn ($query) => $query->where('status', $status))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($searchQuery) use ($search) {
                     $searchQuery
@@ -88,6 +112,10 @@ class TaskController extends Controller
             $tasksQuery
                 ->orderByRaw('case when due_date is null then 1 else 0 end')
                 ->orderByDesc('due_date')
+                ->latest('created_at');
+        } elseif ($sort === 'priority_high') {
+            $tasksQuery
+                ->orderByRaw("case priority when 'high' then 0 when 'medium' then 1 when 'low' then 2 else 3 end")
                 ->latest('created_at');
         } else {
             $tasksQuery->latest();
@@ -151,6 +179,7 @@ class TaskController extends Controller
             'calendarDays' => $calendarDays,
             'tasksByDueDate' => $tasksByDueDate,
             'calendarMonthTaskCount' => $calendarMonthTaskCount,
+            'lastFilterUrl' => $lastFilterUrl,
         ]);
     }
 
@@ -173,10 +202,11 @@ class TaskController extends Controller
 
     public function show(Request $request, Task $task)
     {
-        $isAdminViewer = $request->user()?->isAdmin() && ! $task->user->is($request->user());
-        if (! $isAdminViewer) {
-            Gate::authorize('workWith', $task);
-        }
+        Gate::authorize('workWith', $task);
+
+        $canWorkWith = Gate::allows('workWith', $task);
+        $canManageTask = Gate::allows('manageTask', $task);
+        $canManageCollaborators = Gate::allows('manageCollaborators', $task);
 
         $task->load([
             'user:id,name,email',
@@ -189,14 +219,14 @@ class TaskController extends Controller
         return view('task.show', [
             'task' => $task,
             'isOwner' => $task->user->is($request->user()),
-            'canManageCollaborators' => $task->user->is($request->user()),
-            'canEditTask' => $task->user->is($request->user()),
-            'canToggleSteps' => ! $isAdminViewer,
-            'canCommentOnTask' => ! $isAdminViewer,
+            'canManageCollaborators' => $canManageCollaborators,
+            'canEditTask' => $canManageTask,
+            'canToggleSteps' => $canWorkWith,
+            'canCommentOnTask' => $canWorkWith,
             'activeInvite' => $task->invites()->where(function ($query) {
                 $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })->latest()->first(),
-            'activityLogs' => $task->user->is($request->user())
+            'activityLogs' => ($task->user->is($request->user()) || $request->user()?->isAdmin())
                 ? $task->activityLogs()->with('actor:id,name')->latest()->limit(40)->get()
                 : collect(),
         ]);
@@ -231,6 +261,10 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         Gate::authorize('manageTask', $task);
+
+        $task->recordActivity('task_deleted', auth()->id(), [
+            'task_title' => $task->title,
+        ]);
 
         $task->delete();
 

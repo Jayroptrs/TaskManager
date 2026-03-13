@@ -62,7 +62,7 @@ test('guest cannot reset onboarding endpoint', function () {
         ->assertRedirect(route('login'));
 });
 
-test('onboarding modal includes dashboard step copy for new users', function () {
+test('onboarding modal includes updated dashboard step copy for new users', function () {
     $user = User::factory()->create([
         'onboarding_completed_at' => null,
     ]);
@@ -71,7 +71,7 @@ test('onboarding modal includes dashboard step copy for new users', function () 
         ->get(route('task.index'))
         ->assertOk()
         ->assertSee(__('ui.onboarding_step_2_title'))
-        ->assertSee('samenwerktaken en voortgang.');
+        ->assertSee(__('ui.onboarding_step_3_copy'));
 });
 
 test('completing onboarding twice keeps first completion timestamp', function () {
