@@ -458,6 +458,7 @@ test('create modal keeps reminders hidden until due date is filled', function ()
     $this->actingAs($owner)
         ->get(route('task.index'))
         ->assertOk()
+        ->assertSee('remindersEnabled: false', false)
         ->assertSee("x-model=\"dueDate\"", false)
         ->assertSee("x-show=\"String(dueDate ?? '').trim() !== ''\"", false);
 });

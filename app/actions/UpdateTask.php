@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\User;
 use App\Models\Task;
+use App\TaskPriority;
 use App\TaskStatus;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\DB;
@@ -19,9 +20,12 @@ class UpdateTask
     public function handle(array $attributes, Task $task)
     {
         $data = collect($attributes)->only([
-            'title', 'description', 'status', 'due_date', 'links', 'tags'
+            'title', 'description', 'status', 'priority', 'due_date', 'links', 'tags'
         ])->toArray();
 
+        $data['priority'] = in_array($data['priority'] ?? null, TaskPriority::values(), true)
+            ? $data['priority']
+            : ($task->priority?->value ?? TaskPriority::MEDIUM->value);
         $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
         $remindersEnabled = (bool) ($attributes['reminders_enabled'] ?? true);
         $data['reminder_days'] = $this->normalizeReminderDays(
@@ -29,6 +33,7 @@ class UpdateTask
             $remindersEnabled,
             $task->reminder_days ?? [7, 3, 1]
         );
+        $removeImage = (bool) ($attributes['remove_image'] ?? false);
 
         $newImagePath = null;
         $oldImagePath = null;
@@ -36,6 +41,9 @@ class UpdateTask
             $newImagePath = $attributes['image']->store('ideas', 'public');
             $oldImagePath = $task->image_path;
             $data['image_path'] = $newImagePath;
+        } elseif ($removeImage && $task->hasUploadedImage()) {
+            $oldImagePath = $task->image_path;
+            $data['image_path'] = $this->randomDefaultImagePath();
         }
 
         $allowedAssigneeIds = $task->collaborators()
@@ -72,6 +80,8 @@ class UpdateTask
 
         if ($newImagePath && $oldImagePath && $oldImagePath !== $newImagePath) {
             Storage::disk('public')->delete($oldImagePath);
+        } elseif (! $newImagePath && $oldImagePath) {
+            Storage::disk('public')->delete($oldImagePath);
         }
     }
 
@@ -100,5 +110,14 @@ class UpdateTask
             ->all();
 
         return $normalized === [] ? $fallback : $normalized;
+    }
+
+    private function randomDefaultImagePath(): ?string
+    {
+        $defaultImages = collect(config('tasks.default_images', []))
+            ->filter(fn ($path) => is_string($path) && $path !== '')
+            ->values();
+
+        return $defaultImages->isNotEmpty() ? $defaultImages->random() : null;
     }
 }

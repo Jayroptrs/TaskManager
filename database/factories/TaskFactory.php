@@ -22,6 +22,7 @@ class TaskFactory extends Factory
             'user_id' =>User::factory(),
             'title' => fake()->sentence(),
             'description' => fake()->paragraph(),
+            'priority' => 'medium',
             'links' => [fake()->url()],
             'tags' => [fake()->word()],
             'reminder_days' => [7, 3, 1],

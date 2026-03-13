@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 17</title>
+  <desc id="desc">Aqua gradient with corner cutout tiles.</desc>
+  <defs>
+    <linearGradient id="bg17" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#134e4a"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg17)"/>
+  <path d="M110 110 H340 L390 160 V300 H110 Z" fill="#99f6e4" opacity="0.18"/>
+  <path d="M430 150 H630 L680 200 V320 H430 Z" fill="#ccfbf1" opacity="0.14"/>
+  <path d="M730 100 H980 L1040 160 V330 H730 Z" fill="#f0fdfa" opacity="0.14"/>
+  <rect x="160" y="380" width="860" height="120" rx="26" fill="#ffffff" opacity="0.1"/>
+</svg>

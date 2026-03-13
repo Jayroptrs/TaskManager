@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 6</title>
+  <desc id="desc">Sunset gradient background with diagonal layers.</desc>
+  <defs>
+    <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg6)"/>
+  <polygon points="0,520 380,300 840,500 540,630 0,630" fill="#fdba74" opacity="0.4"/>
+  <polygon points="260,0 1200,0 1200,240 640,420 180,180" fill="#ffedd5" opacity="0.18"/>
+  <polygon points="0,420 300,220 720,430 400,630 0,630" fill="#fed7aa" opacity="0.26"/>
+  <circle cx="980" cy="120" r="80" fill="#fffbeb" opacity="0.22"/>
+</svg>

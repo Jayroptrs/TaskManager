@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\TaskPriority;
 use App\TaskStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use App\Models\UserAuditLog;
 
 class Task extends Model
 {
@@ -24,6 +26,7 @@ class Task extends Model
         'title',
         'description',
         'status',
+        'priority',
         'due_date',
         'reminder_days',
         'tags',
@@ -35,12 +38,14 @@ class Task extends Model
         'links' => 'array',
         'tags' => 'array',
         'status' => TaskStatus::class,
+        'priority' => TaskPriority::class,
         'due_date' => 'date',
         'reminder_days' => 'array',
     ];
 
     protected $attributes = [
         'status' => TaskStatus::PENDING->value,
+        'priority' => TaskPriority::MEDIUM->value,
     ];
 
     protected static function booted(): void
@@ -144,11 +149,27 @@ class Task extends Model
 
     public function recordActivity(string $action, ?int $actorId = null, array $metadata = []): void
     {
+        $auditMetadata = array_merge($metadata, [
+            'task_id' => $this->id,
+            'task_title' => $this->title,
+            'task_owner_id' => $this->user_id,
+        ]);
+
         $this->activityLogs()->create([
             'actor_id' => $actorId,
             'action' => $action,
             'metadata' => $metadata === [] ? null : $metadata,
         ]);
+
+        if ($actorId !== null) {
+            UserAuditLog::query()->create([
+                'target_user_id' => $actorId,
+                'actor_user_id' => $actorId,
+                'action' => $action,
+                'metadata' => $auditMetadata,
+                'created_at' => now(),
+            ]);
+        }
     }
 
     public function syncDueDateReminders(?int $triggeredByUserId = null): void

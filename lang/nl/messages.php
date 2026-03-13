@@ -21,6 +21,8 @@ return [
     'invite_link_copy_failed' => 'Kopiëren van invite-link mislukt.',
     'invite_accepted' => 'Je werkt nu mee aan deze taak.',
     'left_task' => 'Je hebt deze taak verlaten.',
+    'task_default_image_locked' => 'Deze standaardafbeelding kan niet worden verwijderd.',
+    'task_image_reset_to_default' => 'Afbeelding verwijderd. Er is automatisch een standaardafbeelding toegewezen.',
     'account_deleted' => 'Je account is verwijderd.',
     'avatar_removed' => 'Je profielfoto is verwijderd.',
     'comment_added' => 'Reactie geplaatst.',

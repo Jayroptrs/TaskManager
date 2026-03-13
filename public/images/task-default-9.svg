@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 9</title>
+  <desc id="desc">Warm coral gradient with layered circles.</desc>
+  <defs>
+    <linearGradient id="bg9" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg9)"/>
+  <circle cx="220" cy="160" r="170" fill="#fdba74" opacity="0.28"/>
+  <circle cx="910" cy="460" r="240" fill="#ffedd5" opacity="0.16"/>
+  <circle cx="710" cy="170" r="110" fill="#fed7aa" opacity="0.26"/>
+  <rect x="140" y="360" width="540" height="150" rx="30" fill="#fff7ed" opacity="0.12"/>
+</svg>

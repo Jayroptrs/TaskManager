@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 12</title>
+  <desc id="desc">Rose gradient with soft layered ovals.</desc>
+  <defs>
+    <linearGradient id="bg12" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#881337"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg12)"/>
+  <ellipse cx="250" cy="160" rx="230" ry="150" fill="#f9a8d4" opacity="0.24"/>
+  <ellipse cx="910" cy="450" rx="250" ry="170" fill="#fbcfe8" opacity="0.16"/>
+  <ellipse cx="740" cy="170" rx="130" ry="92" fill="#ffe4e6" opacity="0.2"/>
+  <rect x="170" y="360" width="530" height="140" rx="30" fill="#fff1f2" opacity="0.1"/>
+</svg>

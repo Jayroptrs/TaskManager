@@ -24,7 +24,7 @@
                     </button>
                 @endif
 
-                @if ($task->user_id === auth()->id())
+                @if ($canEditTask)
                     <button
                         x-data
                         type="button"
@@ -53,6 +53,7 @@
 
             <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <x-task.status-label :status="$task->status->value">{{ $task->status->label() }}</x-task.status-label>
+                <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">{{ $task->priority?->label() ?? __('task.priority_medium') }}</x-task.priority-label>
                 <div class="text-muted-foreground text-sm">{{ $task->created_at->diffForHumans() }}</div>
                 @if ($task->due_date)
                     <div id="task-deadline" class="text-muted-foreground text-sm">{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</div>
@@ -536,7 +537,7 @@
             <x-task.modal :task="$task" />
         @endif
 
-        @if ($task->user_id === auth()->id())
+        @if ($canEditTask)
             <x-modal name="delete-task-confirmation" :title="__('task.delete_task_confirm_title')" maxWidth="max-w-md">
                 <div class="space-y-4">
                     <p class="text-sm text-muted-foreground">{{ __('task.delete_task_confirm_message') }}</p>

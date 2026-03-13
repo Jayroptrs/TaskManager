@@ -244,6 +244,9 @@ img {
 }
 
 .kanban-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
     border-radius: 1rem;
     background: color-mix(in srgb, var(--color-card) 90%, transparent);
@@ -283,6 +286,7 @@ img {
 }
 
 .kanban-dropzone {
+    flex: 1;
     min-height: 19rem;
     padding: 0.85rem;
     display: grid;
@@ -336,6 +340,8 @@ img {
     transform-origin: top left;
     will-change: transform;
     backface-visibility: hidden;
+    transition: none !important;
+    animation: none !important;
     border: 1px solid color-mix(in srgb, var(--color-primary) 58%, var(--color-border)) !important;
     background: var(--color-card) !important;
     box-shadow:
@@ -404,18 +410,29 @@ img {
   -webkit-text-fill-color: var(--color-foreground);
   caret-color: var(--color-foreground);
 
+  border-color: #22c55e;
+  -webkit-box-shadow:
+    0 0 0 1000px var(--color-card) inset,
+    0 0 0 1px color-mix(in srgb, #22c55e 35%, transparent);
   box-shadow:
-    0 0 0px 1000px var(--color-card) inset,
-    0 0 0 2px #22c55e;
+    0 0 0 1000px var(--color-card) inset,
+    0 0 0 1px color-mix(in srgb, #22c55e 35%, transparent);
 
   transition: background-color 9999s ease-in-out 0s;
 }
 
-/* When focused keep same styling */
 .input:-webkit-autofill:focus,
-.textarea:-webkit-autofill:focus {
+.input:-webkit-autofill:focus-visible,
+.textarea:-webkit-autofill:focus,
+.textarea:-webkit-autofill:focus-visible {
+  border-color: color-mix(in srgb, var(--color-primary) 78%, var(--color-border));
+  -webkit-box-shadow:
+    0 0 0 1000px var(--color-card) inset,
+    0 0 0 calc(var(--spacing) * .5) var(--color-background),
+    0 0 0 calc(var(--spacing) * 1.1) var(--color-primary);
   box-shadow:
-    0 0 0px 1000px var(--color-card) inset,
-    0 0 0 2px #22c55e;
+    0 0 0 1000px var(--color-card) inset,
+    0 0 0 calc(var(--spacing) * .5) var(--color-background),
+    0 0 0 calc(var(--spacing) * 1.1) var(--color-primary);
 }
 

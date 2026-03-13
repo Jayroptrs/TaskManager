@@ -1,4 +1,4 @@
-@props(['name', 'title', 'maxWidth' => 'max-w-2xl'])
+﻿@props(['name', 'title', 'maxWidth' => 'max-w-2xl'])
 <div 
     x-data="{ show: false, name: @js($name) }" 
     x-init="
@@ -74,7 +74,3 @@
     </x-card>
     </div>
 </div>
-
-
-
-

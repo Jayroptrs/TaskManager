@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\TaskPriority;
 use Illuminate\Foundation\Http\FormRequest;
 use App\TaskStatus;
 use Illuminate\Validation\Rule;
@@ -27,6 +28,7 @@ class TaskRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', Rule::enum(TaskStatus::class)],
+            'priority' => ['nullable', Rule::in(TaskPriority::values())],
             'due_date' => ['nullable', 'date'],
             'reminders_enabled' => ['nullable', 'boolean'],
             'reminder_days' => ['nullable', 'array', 'min:1'],
@@ -40,7 +42,39 @@ class TaskRequest extends FormRequest
             'steps.*.completed' => ['boolean'],
             'steps.*.assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'image' => ['nullable', 'image', 'max:5120'],
+            'remove_image' => ['nullable', 'boolean'],
             'invite_emails' => ['nullable', 'string', 'max:2000'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $links = $this->input('links');
+        if (! is_array($links)) {
+            return;
+        }
+
+        $normalizedLinks = collect($links)
+            ->map(fn ($link) => $this->normalizeLinkValue($link))
+            ->all();
+
+        $this->merge([
+            'links' => $normalizedLinks,
+        ]);
+    }
+
+    private function normalizeLinkValue(mixed $value): string
+    {
+        $link = trim((string) $value);
+        if ($link === '') {
+            return $link;
+        }
+
+        $hasScheme = preg_match('~^[a-z][a-z0-9+\-.]*://~i', $link) === 1;
+        if (! $hasScheme && str_starts_with(strtolower($link), 'www.')) {
+            return 'https://'.$link;
+        }
+
+        return $link;
     }
 }

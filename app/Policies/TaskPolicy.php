@@ -12,6 +12,10 @@ class TaskPolicy
      */
     public function workWith(User $user, Task $task): bool
     {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         if ($task->user->is($user)) {
             return true;
         }
@@ -21,11 +25,19 @@ class TaskPolicy
 
     public function manageCollaborators(User $user, Task $task): bool
     {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         return $task->user->is($user);
     }
 
     public function manageTask(User $user, Task $task): bool
     {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         return $task->user->is($user);
     }
 }

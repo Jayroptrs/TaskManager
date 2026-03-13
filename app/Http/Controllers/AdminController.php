@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SupportMessage;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\UserAuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -59,9 +60,23 @@ class AdminController extends Controller
         ]);
     }
 
-    public function resolve(SupportMessage $supportMessage)
+    public function resolve(Request $request, SupportMessage $supportMessage)
     {
+        $previousStatus = $supportMessage->status;
         $this->applySupportStatus($supportMessage, SupportMessage::STATUS_RESOLVED);
+        $supportMessage->refresh();
+
+        $this->recordUserAudit(
+            $supportMessage->user,
+            $request->user(),
+            'admin_support_status_updated',
+            [
+                'support_message_id' => $supportMessage->id,
+                'support_subject' => $supportMessage->subject,
+                'previous_status' => $previousStatus,
+                'new_status' => $supportMessage->status,
+            ]
+        );
 
         return back()->with('success', __('messages.support_status_updated'));
     }
@@ -72,7 +87,21 @@ class AdminController extends Controller
             'status' => ['required', Rule::in(SupportMessage::statuses())],
         ]);
 
+        $previousStatus = $supportMessage->status;
         $this->applySupportStatus($supportMessage, $validated['status']);
+        $supportMessage->refresh();
+
+        $this->recordUserAudit(
+            $supportMessage->user,
+            $request->user(),
+            'admin_support_status_updated',
+            [
+                'support_message_id' => $supportMessage->id,
+                'support_subject' => $supportMessage->subject,
+                'previous_status' => $previousStatus,
+                'new_status' => $supportMessage->status,
+            ]
+        );
 
         return back()->with('success', __('messages.support_status_updated'));
     }
@@ -92,6 +121,18 @@ class AdminController extends Controller
 
         $nextStatus = $validated['status'] ?? SupportMessage::STATUS_WAITING_FOR_USER;
         $this->applySupportStatus($supportMessage, $nextStatus);
+        $supportMessage->refresh();
+
+        $this->recordUserAudit(
+            $supportMessage->user,
+            $request->user(),
+            'admin_support_reply_sent',
+            [
+                'support_message_id' => $supportMessage->id,
+                'support_subject' => $supportMessage->subject,
+                'new_status' => $supportMessage->status,
+            ]
+        );
 
         return back()->with('success', __('messages.support_reply_sent_admin'));
     }
@@ -113,18 +154,67 @@ class AdminController extends Controller
         return back()->with('success', 'Gebruiker is verwijderd.');
     }
 
-    public function userTasks(User $user)
+    public function userTasks(Request $request, User $user)
     {
         $tasks = Task::query()
-            ->where('user_id', $user->id)
+            ->where(function ($query) use ($user): void {
+                $query->where('user_id', $user->id)
+                    ->orWhereHas('collaborators', fn ($q) => $q->where('users.id', $user->id));
+            })
+            ->with('user:id,name')
             ->withCount('collaborators')
             ->latest()
             ->paginate(18);
 
+        $auditLogs = UserAuditLog::query()
+            ->where('target_user_id', $user->id)
+            ->where('actor_user_id', $user->id)
+            ->whereIn('action', $this->taskAuditActions())
+            ->with('actor:id,name,email')
+            ->latest('created_at')
+            ->limit(25)
+            ->get();
+
         return view('admin.user-tasks', [
             'targetUser' => $user,
             'tasks' => $tasks,
+            'auditLogs' => $auditLogs,
         ]);
+    }
+
+    private function recordUserAudit(?User $targetUser, ?User $actor, string $action, array $metadata = []): void
+    {
+        if (! $targetUser) {
+            return;
+        }
+
+        UserAuditLog::query()->create([
+            'target_user_id' => $targetUser->id,
+            'actor_user_id' => $actor?->id,
+            'action' => $action,
+            'metadata' => $metadata === [] ? null : $metadata,
+            'created_at' => now(),
+        ]);
+    }
+
+    private function taskAuditActions(): array
+    {
+        return [
+            'task_created',
+            'task_updated',
+            'task_deleted',
+            'status_changed',
+            'step_toggled',
+            'comment_added',
+            'comment_deleted',
+            'collab_request_sent',
+            'invite_link_created',
+            'collab_added_via_link',
+            'collab_removed',
+            'collab_left',
+            'collab_request_accepted',
+            'collab_request_rejected',
+        ];
     }
 
     private function applySupportStatus(SupportMessage $supportMessage, string $status): void

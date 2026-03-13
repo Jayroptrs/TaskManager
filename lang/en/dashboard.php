@@ -22,9 +22,10 @@ return [
     'no_activity' => 'No activity available yet.',
     'status_distribution' => 'Status distribution',
     'status_distribution_sub' => 'Current distribution of your tasks.',
-    'steps_progress' => 'Steps progress',
+    'steps_progress' => 'Checklist progress',
     'steps_progress_sub' => 'Completed checklist items across your tasks.',
     'top_tags' => 'Top tags',
     'top_tags_sub' => 'Most used labels in your tasks.',
+    'top_tags_hint' => 'Tip: use tags to search and filter your task overview faster.',
     'no_tags' => 'No tags added yet.',
 ];

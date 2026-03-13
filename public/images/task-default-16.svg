@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 16</title>
+  <desc id="desc">Violet dusk gradient with pill shapes.</desc>
+  <defs>
+    <linearGradient id="bg16" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b0764"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg16)"/>
+  <rect x="110" y="110" width="330" height="110" rx="55" fill="#c4b5fd" opacity="0.2"/>
+  <rect x="520" y="150" width="220" height="88" rx="44" fill="#ede9fe" opacity="0.14"/>
+  <rect x="760" y="100" width="280" height="120" rx="60" fill="#ddd6fe" opacity="0.18"/>
+  <rect x="160" y="360" width="860" height="130" rx="65" fill="#faf5ff" opacity="0.1"/>
+</svg>

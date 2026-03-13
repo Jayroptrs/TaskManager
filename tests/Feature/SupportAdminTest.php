@@ -2,6 +2,7 @@
 
 use App\Models\Task;
 use App\Models\User;
+use App\Models\UserAuditLog;
 use Illuminate\Support\Facades\Storage;
 
 test('guest can submit support form for login issues', function () {
@@ -117,6 +118,34 @@ test('admin can update support status to waiting for user', function () {
     expect($ticket->fresh()->resolved_at)->toBeNull();
 });
 
+test('admin support status update is recorded in user audit log', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+    $ticket = $user->supportMessages()->create([
+        'subject' => 'Audit status wijziging',
+        'category' => 'bug',
+        'message' => 'Controle op audit.',
+        'status' => 'open',
+    ]);
+
+    $this->actingAs($admin)
+        ->patch(route('admin.support.status', $ticket), [
+            'status' => 'waiting_for_user',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('user_audit_logs', [
+        'target_user_id' => $user->id,
+        'actor_user_id' => $admin->id,
+        'action' => 'admin_support_status_updated',
+    ]);
+
+    $audit = UserAuditLog::query()->where('target_user_id', $user->id)->latest('id')->first();
+    expect($audit)->not->toBeNull();
+    expect(data_get($audit?->metadata, 'support_message_id'))->toBe($ticket->id);
+    expect(data_get($audit?->metadata, 'new_status'))->toBe('waiting_for_user');
+});
+
 test('admin resolving guest support ticket marks it fully resolved immediately', function () {
     $admin = User::factory()->admin()->create();
     $ticket = \App\Models\SupportMessage::query()->create([
@@ -163,6 +192,30 @@ test('admin can send support reply and set status', function () {
     ]);
 
     expect($ticket->fresh()->status)->toBe('waiting_for_user');
+});
+
+test('admin support reply is recorded in user audit log', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+    $ticket = $user->supportMessages()->create([
+        'subject' => 'Audit supportreactie',
+        'category' => 'account',
+        'message' => 'Controle op audit reply.',
+        'status' => 'open',
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.support.reply', $ticket), [
+            'message' => 'Kun je extra details delen?',
+            'status' => 'waiting_for_user',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('user_audit_logs', [
+        'target_user_id' => $user->id,
+        'actor_user_id' => $admin->id,
+        'action' => 'admin_support_reply_sent',
+    ]);
 });
 
 test('user can reply to own support ticket', function () {
@@ -385,6 +438,221 @@ test('admin can view tasks page for a user', function () {
         ->assertOk()
         ->assertSee('Doel Gebruiker')
         ->assertSee('Taak voor admin');
+});
+
+test('admin user tasks page includes tasks where user is collaborator', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $targetUser = User::factory()->create(['name' => 'Samenwerker']);
+    $owner = User::factory()->create();
+
+    $ownedTask = Task::factory()->create([
+        'user_id' => $targetUser->id,
+        'title' => 'Eigen taak van gebruiker',
+    ]);
+
+    $collabTask = Task::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Taak waar gebruiker aan meewerkt',
+    ]);
+    $collabTask->collaborators()->attach($targetUser->id, ['added_by' => $owner->id]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $targetUser))
+        ->assertOk()
+        ->assertSee($ownedTask->title)
+        ->assertSee($collabTask->title)
+        ->assertSee(__('admin.user_task_role_owner'))
+        ->assertSee(__('admin.user_task_role_collaborator'));
+});
+
+test('admin user audit section shows task activity from selected user', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create(['name' => 'Audit Target']);
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Audit taak titel',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('task.update', $task), [
+            'title' => 'Audit taak titel bijgewerkt',
+            'description' => 'Omschrijving',
+            'status' => 'in_progress',
+            'links' => [],
+            'tags' => [],
+        ])
+        ->assertStatus(302);
+
+    $this->actingAs($user)
+        ->delete(route('task.destroy', $task))
+        ->assertRedirect(route('task.index'));
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $user))
+        ->assertOk()
+        ->assertSee(__('admin.user_audit_title'))
+        ->assertSee('Audit taak titel bijgewerkt')
+        ->assertSee(__('task.activity_task_updated'))
+        ->assertSee(__('task.activity_task_deleted'));
+
+    $this->assertDatabaseHas('user_audit_logs', [
+        'target_user_id' => $user->id,
+        'actor_user_id' => $user->id,
+        'action' => 'task_updated',
+    ]);
+    $this->assertDatabaseHas('user_audit_logs', [
+        'target_user_id' => $user->id,
+        'actor_user_id' => $user->id,
+        'action' => 'task_deleted',
+    ]);
+});
+
+test('opening admin user tasks page no longer records legacy page-view audit action', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $user))
+        ->assertOk();
+
+    $this->assertDatabaseMissing('user_audit_logs', [
+        'target_user_id' => $user->id,
+        'action' => 'admin_user_tasks_viewed',
+    ]);
+});
+
+test('creating task writes user audit log entry with task metadata', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post(route('task.store'), [
+            'title' => 'Nieuw audit item',
+            'description' => 'Taak om create-audit te testen.',
+            'status' => 'pending',
+            'links' => [],
+            'tags' => [],
+        ])
+        ->assertRedirect(route('task.index'));
+
+    $audit = UserAuditLog::query()
+        ->where('target_user_id', $user->id)
+        ->where('actor_user_id', $user->id)
+        ->where('action', 'task_created')
+        ->latest('id')
+        ->first();
+
+    expect($audit)->not->toBeNull();
+    expect(data_get($audit?->metadata, 'task_id'))->toBeInt();
+    expect(data_get($audit?->metadata, 'task_title'))->toBe('Nieuw audit item');
+    expect(data_get($audit?->metadata, 'task_owner_id'))->toBe($user->id);
+});
+
+test('admin user audit section filters out non-task actions even when actor is selected user', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create(['name' => 'Filtered User']);
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Zichtbare taakactie',
+    ]);
+    $task->recordActivity('task_updated', $user->id);
+
+    UserAuditLog::query()->create([
+        'target_user_id' => $user->id,
+        'actor_user_id' => $user->id,
+        'action' => 'admin_support_reply_sent',
+        'metadata' => ['note' => 'Should not render in task activity section'],
+        'created_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $user))
+        ->assertOk()
+        ->assertSee('Zichtbare taakactie')
+        ->assertSee(__('task.activity_task_updated'))
+        ->assertDontSee('admin_support_reply_sent')
+        ->assertDontSee('Should not render in task activity section');
+});
+
+test('admin user audit section only shows activity for selected user', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $selectedUser = User::factory()->create(['name' => 'Selected User']);
+    $otherUser = User::factory()->create(['name' => 'Other User']);
+
+    $selectedTask = Task::factory()->create([
+        'user_id' => $selectedUser->id,
+        'title' => 'Selected user task title',
+    ]);
+    $otherTask = Task::factory()->create([
+        'user_id' => $otherUser->id,
+        'title' => 'Other user task title',
+    ]);
+
+    $selectedTask->recordActivity('task_updated', $selectedUser->id);
+    $otherTask->recordActivity('task_updated', $otherUser->id);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $selectedUser))
+        ->assertOk()
+        ->assertSee('Selected user task title')
+        ->assertDontSee('Other user task title');
+});
+
+test('admin user audit section is limited to 25 latest task activity rows', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $user = User::factory()->create(['name' => 'Limited Audit User']);
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Limited audit task',
+    ]);
+
+    foreach (range(1, 30) as $index) {
+        $task->recordActivity('task_updated', $user->id, ['index' => $index]);
+    }
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $user))
+        ->assertOk()
+        ->assertViewHas('auditLogs', fn ($auditLogs) => $auditLogs->count() === 25);
+});
+
+test('collaborator task actions are visible in selected user audit with owner metadata', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $owner = User::factory()->create();
+    $collaborator = User::factory()->create(['name' => 'Collaborator User']);
+    $task = Task::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Gedeelde audit taak',
+        'status' => 'pending',
+    ]);
+    $task->collaborators()->attach($collaborator->id, ['added_by' => $owner->id]);
+
+    $this->actingAs($collaborator)
+        ->patch(route('task.status.update', $task), [
+            'status' => 'in_progress',
+        ])
+        ->assertRedirect();
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $collaborator))
+        ->assertOk()
+        ->assertSee('Gedeelde audit taak')
+        ->assertSee(__('task.activity_status_changed', ['from' => 'pending', 'to' => 'in_progress']));
+
+    $this->assertDatabaseHas('user_audit_logs', [
+        'target_user_id' => $collaborator->id,
+        'actor_user_id' => $collaborator->id,
+        'action' => 'status_changed',
+    ]);
+
+    $audit = UserAuditLog::query()
+        ->where('target_user_id', $collaborator->id)
+        ->where('action', 'status_changed')
+        ->latest('id')
+        ->first();
+
+    expect(data_get($audit?->metadata, 'task_owner_id'))->toBe($owner->id);
+    expect(data_get($audit?->metadata, 'task_title'))->toBe('Gedeelde audit taak');
 });
 
 test('admin can open task detail of another user in read mode', function () {

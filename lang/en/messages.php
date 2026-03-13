@@ -21,6 +21,8 @@ return [
     'invite_link_copy_failed' => 'Failed to copy invite link.',
     'invite_accepted' => 'You now collaborate on this task.',
     'left_task' => 'You left this task.',
+    'task_default_image_locked' => 'This default image cannot be removed.',
+    'task_image_reset_to_default' => 'Image removed. A default image has been assigned automatically.',
     'account_deleted' => 'Your account has been deleted.',
     'avatar_removed' => 'Your profile photo has been removed.',
     'comment_added' => 'Comment posted.',

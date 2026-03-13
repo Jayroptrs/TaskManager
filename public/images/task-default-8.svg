@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Default task image 8</title>
+  <desc id="desc">Cool gray-blue gradient with geometric tiles.</desc>
+  <defs>
+    <linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg8)"/>
+  <rect x="120" y="90" width="220" height="150" rx="26" fill="#60a5fa" opacity="0.26"/>
+  <rect x="390" y="140" width="180" height="120" rx="20" fill="#93c5fd" opacity="0.24"/>
+  <rect x="620" y="90" width="260" height="170" rx="28" fill="#bfdbfe" opacity="0.22"/>
+  <rect x="930" y="120" width="160" height="120" rx="20" fill="#dbeafe" opacity="0.2"/>
+  <rect x="170" y="330" width="860" height="210" rx="32" fill="#f8fafc" opacity="0.12"/>
+</svg>
