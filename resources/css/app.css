@@ -110,6 +110,10 @@
     transform: none !important;
 }
 
+:root[data-motion='off'] .neon-orb--cursor {
+    opacity: 0 !important;
+}
+
 html,
 body {
     min-height: 100%;
