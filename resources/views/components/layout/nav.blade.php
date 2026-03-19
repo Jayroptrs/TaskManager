@@ -1,4 +1,4 @@
-﻿<div class="m-0 p-0" x-data="{
+<div class="contents" x-data="{
     theme: document.documentElement.dataset.theme || 'light',
     accent: document.documentElement.dataset.accent || 'green',
     motion: document.documentElement.dataset.motion || 'on',
@@ -35,10 +35,10 @@
     });
 ">
 <nav
-    class="fixed left-0 right-0 top-0 z-[80] m-0 border-b border-border/80 bg-card px-4 sm:px-6 transition-all duration-300 ease-out"
-    :class="scrolledCompact ? 'py-1.5' : 'py-3'"
+    class="{{ auth()->check() ? 'fixed left-0 right-0 top-0 z-[80]' : 'static' }} m-0 border-b border-border/80 bg-card px-4 sm:px-6 transition-all duration-300 ease-out"
+    :class="scrolledCompact ? 'md:py-1.5' : 'md:py-3'"
 >
-    <div class="max-w-7xl lg:max-w-[76rem] mx-auto flex items-center relative transition-all duration-300 ease-out" :class="scrolledCompact ? 'min-h-12' : 'min-h-16'">
+    <div class="max-w-7xl lg:max-w-[76rem] mx-auto flex min-h-16 items-center relative transition-all duration-300 ease-out" :class="scrolledCompact ? 'md:min-h-12' : 'md:min-h-16'">
         @php
             $brandClass = "inline-block font-['Trebuchet_MS','Avenir_Next','Segoe_UI',sans-serif] text-[clamp(1.5rem,2.8vw,2rem)] font-extrabold uppercase tracking-[0.06em] leading-none text-[color:color-mix(in_srgb,var(--color-primary)_70%,var(--color-foreground))] [text-shadow:0_0_18px_color-mix(in_srgb,var(--color-primary)_35%,transparent)] transition-all duration-200 hover:-translate-y-px hover:text-[color:color-mix(in_srgb,var(--color-primary)_86%,var(--color-foreground))] hover:[text-shadow:0_0_10px_color-mix(in_srgb,var(--color-primary)_60%,transparent),0_0_24px_color-mix(in_srgb,var(--color-primary)_50%,transparent),0_0_40px_color-mix(in_srgb,var(--color-primary)_35%,transparent)]";
             $locale = app()->getLocale();
@@ -413,11 +413,13 @@
     </div>
 </nav>
 
-<div
-    aria-hidden="true"
-    class="h-[88px] transition-all duration-300 ease-out md:h-[88px]"
-    :class="scrolledCompact ? 'md:h-[60px]' : 'md:h-[88px]'"
-></div>
+@auth
+    <div
+        aria-hidden="true"
+        class="h-[88px] transition-all duration-300 ease-out md:h-[88px]"
+        :class="scrolledCompact ? 'md:h-[60px]' : 'md:h-[88px]'"
+    ></div>
+@endauth
 
 @auth
     <div
@@ -646,6 +648,5 @@
     </div>
 @endauth
 </div>
-
 
 

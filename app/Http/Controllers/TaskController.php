@@ -22,6 +22,16 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
+        return $this->renderIndex($request, 'active', false);
+    }
+
+    public function archived(Request $request)
+    {
+        return $this->renderIndex($request, 'archived', true);
+    }
+
+    private function renderIndex(Request $request, string $archive, bool $archivePage)
+    {
         $user = Auth::user();
         $view = match ((string) $request->query('view', 'list')) {
             'board', 'bord' => 'board',
@@ -41,6 +51,13 @@ class TaskController extends Controller
             ? $request->query('status')
             : null;
 
+        if ($archivePage || ($archive !== 'active' && $view !== 'list')) {
+            $view = 'list';
+        }
+
+        $taskIndexRouteName = $archivePage ? 'task.archived' : 'task.index';
+        $filterSessionKey = $archivePage ? 'tasks.archived_last_filter' : 'tasks.last_filter';
+
         if ($request->boolean('save_last_filter')) {
             $lastFilter = array_filter([
                 'q' => $search !== '' ? $search : null,
@@ -49,20 +66,23 @@ class TaskController extends Controller
                 'work' => $work !== 'all' ? $work : null,
                 'due' => $due !== 'all' ? $due : null,
                 'status' => $view !== 'board' ? $status : null,
-                'view' => $view !== 'list' ? $view : null,
+                'view' => ! $archivePage && $view !== 'list' ? $view : null,
                 'month' => $view === 'calendar' ? (string) $request->query('month', '') : null,
             ], fn ($value) => $value !== null && $value !== '');
 
-            $request->session()->put('tasks.last_filter', $lastFilter);
+            $request->session()->put($filterSessionKey, $lastFilter);
         }
 
-        $lastFilter = $request->session()->get('tasks.last_filter', []);
+        $lastFilter = $request->session()->get($filterSessionKey, []);
         $lastFilterUrl = is_array($lastFilter) && $lastFilter !== []
-            ? route('task.index', $lastFilter)
+            ? route($taskIndexRouteName, $lastFilter)
             : null;
 
         $hasTagsColumn = Schema::hasColumn('ideas', 'tags');
-        $baseTasksQuery = Task::query()->visibleTo($user);
+        $baseTasksQuery = Task::query()
+            ->select(['id', 'user_id', 'title', 'description', 'status', 'priority', 'due_date', 'tags', 'image_path', 'created_at', 'updated_at', 'archived_at'])
+            ->visibleTo($user)
+            ->applyArchiveState($archive);
         $today = now()->startOfDay()->toDateString();
         $upcomingEnd = now()->startOfDay()->addDays(7)->toDateString();
 
@@ -93,6 +113,7 @@ class TaskController extends Controller
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
+            ->when($hasTagsColumn && $selectedTag !== '', fn ($query) => $query->whereRaw('LOWER(tags) LIKE ?', ['%"'.$selectedTag.'"%']))
             ->when($due === 'upcoming', fn ($query) => $query
                 ->whereNotNull('due_date')
                 ->whereBetween('due_date', [$today, $upcomingEnd]))
@@ -122,15 +143,6 @@ class TaskController extends Controller
         }
 
         $tasks = $tasksQuery->get();
-
-        if ($hasTagsColumn && $selectedTag !== '') {
-            $tasks = $tasks
-                ->filter(function ($task) use ($selectedTag) {
-                    return collect($task->tags ?? [])
-                        ->contains(fn ($tag) => ltrim(strtolower(trim((string) $tag)), '#') === $selectedTag);
-                })
-                ->values();
-        }
 
         $availableTags = $hasTagsColumn
             ? (clone $baseTasksQuery)
@@ -173,13 +185,17 @@ class TaskController extends Controller
             'selectedDue' => $due,
             'selectedSort' => $sort,
             'selectedTag' => $selectedTag,
-            'statusCounts' => Task::statusCounts($user),
+            'statusCounts' => Task::statusCounts($user, $archive),
             'availableTags' => $availableTags,
             'calendarMonth' => $calendarMonth,
             'calendarDays' => $calendarDays,
             'tasksByDueDate' => $tasksByDueDate,
             'calendarMonthTaskCount' => $calendarMonthTaskCount,
             'lastFilterUrl' => $lastFilterUrl,
+            'isArchivePage' => $archivePage,
+            'taskIndexRouteName' => $taskIndexRouteName,
+            'pageTitle' => $archivePage ? __('task.archived_page_title') : __('task.page_title'),
+            'pageSubtitle' => $archivePage ? __('task.archived_page_subtitle') : __('task.page_subtitle'),
         ]);
     }
 
@@ -241,6 +257,7 @@ class TaskController extends Controller
     {
         Gate::authorize('manageTask', $task);
         $validated = $request->safe()->all();
+        $before = $task->activitySnapshot();
 
         if ($this->wouldExceedOpenTaskLimit($task->user, $task, (string) ($validated['status'] ?? $task->status->value))) {
             return back()
@@ -249,13 +266,45 @@ class TaskController extends Controller
         }
 
         $action->handle($validated, $task);
-        $task->recordActivity('task_updated', $request->user()->id);
+        $task->refresh();
+        $changes = $task->activityChangesFrom($before);
+        if ($changes !== []) {
+            $task->recordActivity('task_updated', $request->user()->id, [
+                'changes' => $changes,
+            ]);
+        }
         $task->syncDueDateReminders($request->user()->id);
         if ($task->user->is($request->user())) {
             $this->addCollaboratorsByEmail($task, (string) $request->input('invite_emails'), $request->user()->id);
         }
 
         return back()->with('Succes', 'Taak is aangepast');
+    }
+
+    public function archive(Request $request, Task $task)
+    {
+        Gate::authorize('manageTask', $task);
+
+        if (! $task->isArchived()) {
+            $task->forceFill(['archived_at' => now()])->save();
+            $task->dueDateReminders()->delete();
+            $task->recordActivity('task_archived', $request->user()->id);
+        }
+
+        return to_route('task.index')->with('success', __('messages.task_archived'));
+    }
+
+    public function restore(Request $request, Task $task)
+    {
+        Gate::authorize('manageTask', $task);
+
+        if ($task->isArchived()) {
+            $task->forceFill(['archived_at' => null])->save();
+            $task->recordActivity('task_restored', $request->user()->id);
+            $task->syncDueDateReminders($request->user()->id);
+        }
+
+        return back()->with('success', __('messages.task_restored'));
     }
 
     public function destroy(Task $task)
@@ -322,6 +371,7 @@ class TaskController extends Controller
         }
 
         $openTasksCount = $owner->tasks()
+            ->notArchived()
             ->whereIn('status', [TaskStatus::PENDING->value, TaskStatus::IN_PROGRESS->value])
             ->count();
 

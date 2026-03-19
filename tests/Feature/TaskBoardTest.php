@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Task;
+use App\Models\TaskActivityLog;
 use App\Models\TaskCollaborationRequest;
 use App\Models\TaskInvite;
 use App\Models\User;
@@ -297,6 +298,33 @@ test('user can delete own task', function () {
 
     $this->assertDatabaseMissing('ideas', ['id' => $task->id]);
     Storage::disk('public')->assertMissing($imagePath);
+});
+
+test('user can archive task and archived page shows it separately from active tasks', function () {
+    $user = User::factory()->create();
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Te archiveren taak',
+        'status' => 'in_progress',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('task.archive', $task))
+        ->assertRedirect(route('task.index'));
+
+    expect($task->fresh()->archived_at)->not->toBeNull();
+
+    $this->actingAs($user)
+        ->get(route('task.index'))
+        ->assertOk()
+        ->assertDontSee('Te archiveren taak');
+
+    $this->actingAs($user)
+        ->get(route('task.archived'))
+        ->assertOk()
+        ->assertSee('Te archiveren taak')
+        ->assertSee(__('task.archived_page_title'))
+        ->assertSee(__('task.archived_badge'));
 });
 
 test('updating task image removes previous image file', function () {
@@ -671,6 +699,78 @@ test('user can update task priority', function () {
         ->assertStatus(302);
 
     expect($task->fresh()->priority->value)->toBe('high');
+});
+
+test('updating task stores detailed activity changes for title priority and due date', function () {
+    $user = User::factory()->create();
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Oude titel',
+        'priority' => 'low',
+        'due_date' => now()->addDays(2)->toDateString(),
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('task.update', $task), [
+            'title' => 'Nieuwe titel',
+            'description' => 'Omschrijving',
+            'status' => 'pending',
+            'priority' => 'high',
+            'due_date' => now()->addDays(7)->toDateString(),
+            'links' => [],
+            'tags' => [],
+        ])
+        ->assertStatus(302);
+
+    $log = TaskActivityLog::query()
+        ->where('idea_id', $task->id)
+        ->where('action', 'task_updated')
+        ->latest('id')
+        ->first();
+
+    expect($log)->not->toBeNull();
+    expect(data_get($log?->metadata, 'changes.title.from'))->toBe('Oude titel');
+    expect(data_get($log?->metadata, 'changes.title.to'))->toBe('Nieuwe titel');
+    expect(data_get($log?->metadata, 'changes.priority.from'))->toBe('low');
+    expect(data_get($log?->metadata, 'changes.priority.to'))->toBe('high');
+    expect(data_get($log?->metadata, 'changes.due_date.from'))->toBe(now()->addDays(2)->toDateString());
+    expect(data_get($log?->metadata, 'changes.due_date.to'))->toBe(now()->addDays(7)->toDateString());
+
+    $this->actingAs($user)
+        ->get(route('task.show', $task))
+        ->assertOk()
+        ->assertSee(__('task.activity_field_title'))
+        ->assertSee('Oude titel')
+        ->assertSee('Nieuwe titel')
+        ->assertSee(__('task.activity_field_priority'))
+        ->assertSee(__('task.priority_low'))
+        ->assertSee(__('task.priority_high'))
+        ->assertSee(__('task.activity_field_due_date'));
+});
+
+test('archived open tasks do not count toward open task limit', function () {
+    config()->set('tasks.max_open_tasks', 1);
+
+    $user = User::factory()->create();
+    $archivedTask = Task::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'in_progress',
+        'archived_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('task.store'), [
+            'title' => 'Nieuwe actieve taak',
+            'description' => 'Omschrijving',
+            'status' => 'pending',
+            'links' => [],
+            'tags' => [],
+        ])
+        ->assertRedirect(route('task.index'));
+
+    expect(Task::query()->where('user_id', $user->id)->notArchived()->count())->toBe(1);
+    expect($archivedTask->fresh()->isArchived())->toBeTrue();
 });
 
 test('work filter can separate solo and team tasks', function () {

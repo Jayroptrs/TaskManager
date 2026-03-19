@@ -28,7 +28,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-background text-foreground antialiased">
-    <main class="mx-auto flex min-h-screen min-h-dvh w-full max-w-3xl items-center px-4 py-10 sm:px-6">
+    <div class="neon-scene" data-neon-scene aria-hidden="true">
+        <div class="neon-scene-layer neon-scene-backdrop"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--green" data-neon-orb data-start-x="12" data-start-y="16"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--cyan" data-neon-orb data-start-x="84" data-start-y="14"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--rose" data-neon-orb data-start-x="72" data-start-y="72"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--pink" data-neon-orb data-start-x="90" data-start-y="48"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--orange" data-neon-orb data-start-x="54" data-start-y="20"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--violet" data-neon-orb data-start-x="18" data-start-y="78"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--yellow" data-neon-orb data-start-x="48" data-start-y="84"></div>
+        <div class="neon-scene-layer neon-scene-vignette"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--cursor" data-cursor-orb></div>
+    </div>
+
+    <main class="app-shell mx-auto flex min-h-screen min-h-dvh w-full max-w-3xl items-center px-4 py-10 sm:px-6">
         <section class="w-full rounded-2xl border border-border/80 bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_96%,white_4%),color-mix(in_srgb,var(--color-input)_12%,var(--color-card)))] p-6 shadow-[0_20px_45px_color-mix(in_srgb,black_12%,transparent),0_0_20px_color-mix(in_srgb,var(--color-primary)_16%,transparent)] sm:p-8">
             <p class="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Error {{ $status }}</p>
             <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{{ $title }}</h1>

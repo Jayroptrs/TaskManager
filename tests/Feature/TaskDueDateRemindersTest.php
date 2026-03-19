@@ -191,6 +191,38 @@ test('updating task with reminders disabled removes all existing reminder rows',
     expect(TaskDueDateReminder::query()->where('task_id', $task->id)->count())->toBe(0);
 });
 
+test('archiving a task removes existing reminders and restoring recreates them', function () {
+    $owner = User::factory()->create();
+    $task = Task::factory()->create([
+        'user_id' => $owner->id,
+        'due_date' => now()->addDays(10)->toDateString(),
+        'reminder_days' => [7, 3, 1],
+        'status' => 'pending',
+    ]);
+
+    $task->syncDueDateReminders($owner->id);
+    expect(TaskDueDateReminder::query()->where('task_id', $task->id)->count())->toBe(3);
+
+    $this->actingAs($owner)
+        ->patch(route('task.archive', $task))
+        ->assertRedirect(route('task.index'));
+
+    expect(TaskDueDateReminder::query()->where('task_id', $task->id)->count())->toBe(0);
+
+    $this->actingAs($owner)
+        ->patch(route('task.restore', $task))
+        ->assertRedirect();
+
+    $restoredReminders = TaskDueDateReminder::query()
+        ->where('task_id', $task->id)
+        ->where('user_id', $owner->id)
+        ->orderByDesc('days_before')
+        ->get();
+
+    expect($restoredReminders)->toHaveCount(3);
+    expect($restoredReminders->pluck('days_before')->all())->toBe([7, 3, 1]);
+});
+
 test('accepting collaboration request on task with due date creates reminders for invitee', function () {
     $owner = User::factory()->create();
     $invitee = User::factory()->create();

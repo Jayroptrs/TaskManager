@@ -157,11 +157,12 @@ class AdminController extends Controller
     public function userTasks(Request $request, User $user)
     {
         $tasks = Task::query()
+            ->select(['id', 'user_id', 'title', 'description', 'status', 'priority', 'created_at', 'archived_at'])
             ->where(function ($query) use ($user): void {
                 $query->where('user_id', $user->id)
                     ->orWhereHas('collaborators', fn ($q) => $q->where('users.id', $user->id));
             })
-            ->with('user:id,name')
+            ->with(['user:id,name', 'collaborators:id,name,email'])
             ->withCount('collaborators')
             ->latest()
             ->paginate(18);

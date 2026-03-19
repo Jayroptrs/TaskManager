@@ -34,6 +34,17 @@
                         {{ $task->description ?: __('task.no_description') }}
                     </p>
 
+                    @if ($task->collaborators->isNotEmpty())
+                        <div class="mt-3 space-y-2">
+                            @foreach ($task->collaborators as $collaborator)
+                                <div class="rounded-lg border border-border/70 bg-card/60 px-3 py-2">
+                                    <p class="text-xs font-medium text-foreground">{{ $collaborator->name }}</p>
+                                    <p class="mt-0.5 text-xs text-muted-foreground break-all">{{ $collaborator->email }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
                     <div class="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                         <span>{{ __('admin.collaborators_count', ['count' => $task->collaborators_count]) }}</span>
                         <span>{{ $task->created_at->diffForHumans() }}</span>
@@ -63,10 +74,13 @@
                         $metadata = $auditLog->metadata ?? [];
                         $taskTitle = (string) (data_get($metadata, 'task_title') ?: '#'.data_get($metadata, 'task_id'));
                         $activityKey = 'task.activity_'.$auditLog->action;
+                        $fromStatus = \App\TaskStatus::tryFrom((string) data_get($metadata, 'from', ''));
+                        $toStatus = \App\TaskStatus::tryFrom((string) data_get($metadata, 'to', ''));
+                        $changeEntries = \App\Models\Task::activityChangeEntries($metadata);
                         $activityText = \Illuminate\Support\Facades\Lang::has($activityKey)
                             ? __($activityKey, [
-                                'from' => data_get($metadata, 'from', '-'),
-                                'to' => data_get($metadata, 'to', '-'),
+                                'from' => $fromStatus?->label() ?? data_get($metadata, 'from', '-'),
+                                'to' => $toStatus?->label() ?? data_get($metadata, 'to', '-'),
                                 'step' => data_get($metadata, 'step', '-'),
                                 'collaborator' => data_get($metadata, 'collaborator', '-'),
                                 'invitee' => data_get($metadata, 'invitee', '-'),
@@ -82,6 +96,18 @@
                             <p class="text-sm text-foreground">{{ $message }}</p>
                             <p class="text-xs text-muted-foreground">{{ $auditLog->created_at?->diffForHumans() }}</p>
                         </div>
+                        @if ($changeEntries->isNotEmpty())
+                            <div class="mt-2 space-y-1.5 rounded-lg border border-border/60 bg-card/55 px-2.5 py-2">
+                                @foreach ($changeEntries as $change)
+                                    <p class="text-xs text-muted-foreground">
+                                        <span class="font-medium text-foreground/90">{{ $change['label'] }}</span>
+                                        <span class="mx-1 text-foreground/55">{{ $change['from'] }}</span>
+                                        <span class="text-foreground/45">&rarr;</span>
+                                        <span class="ml-1 text-foreground/80">{{ $change['to'] }}</span>
+                                    </p>
+                                @endforeach
+                            </div>
+                        @endif
                         <p class="mt-1 text-xs text-muted-foreground">
                             {{ __('admin.audit_actor', ['name' => $auditLog->actor?->name ?? __('admin.audit_actor_system')]) }}
                             @if ($auditLog->actor?->email)

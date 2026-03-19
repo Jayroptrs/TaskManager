@@ -17,6 +17,8 @@ class DashboardController extends Controller
 
         $tasks = Task::query()
             ->visibleTo($user)
+            ->notArchived()
+            ->select(['id', 'user_id', 'status', 'tags', 'created_at', 'updated_at'])
             ->with('steps:id,idea_id,completed')
             ->withCount('collaborators')
             ->get();

@@ -100,3 +100,31 @@ test('dashboard counts owned task with collaborators as collaborative too', func
             '1',
         ]);
 });
+
+test('dashboard excludes archived tasks from stats and tag summaries', function () {
+    $user = User::factory()->create();
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'status' => TaskStatus::PENDING,
+        'title' => 'Actieve taak',
+        'tags' => ['zichtbaar'],
+    ]);
+
+    Task::factory()->create([
+        'user_id' => $user->id,
+        'status' => TaskStatus::COMPLETED,
+        'title' => 'Gearchiveerde taak',
+        'tags' => ['verborgen'],
+        'archived_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard.index'))
+        ->assertOk()
+        ->assertSee(__('dashboard.kpi_total_tasks'))
+        ->assertSee('1')
+        ->assertSee('#zichtbaar')
+        ->assertDontSee('Gearchiveerde taak')
+        ->assertDontSee('#verborgen');
+});

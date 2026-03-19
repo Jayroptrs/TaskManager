@@ -25,6 +25,28 @@
                 @endif
 
                 @if ($canEditTask)
+                    @if ($task->isArchived())
+                        <button
+                            x-data
+                            type="button"
+                            @click="$dispatch('open-modal', 'restore-task-confirmation')"
+                            class="btn btn-outlined w-full sm:w-auto transition-all duration-200 ease-out hover:-translate-y-0.5"
+                        >
+                            &#8634; {{ __('task.restore_task') }}
+                        </button>
+                    @else
+                        <button
+                            x-data
+                            type="button"
+                            @click="$dispatch('open-modal', 'archive-task-confirmation')"
+                            class="btn btn-outlined w-full sm:w-auto transition-all duration-200 ease-out hover:-translate-y-0.5"
+                        >
+                            &#128230; {{ __('task.archive_task') }}
+                        </button>
+                    @endif
+                @endif
+
+                @if ($canEditTask)
                     <button
                         x-data
                         type="button"
@@ -54,6 +76,9 @@
             <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <x-task.status-label :status="$task->status->value">{{ $task->status->label() }}</x-task.status-label>
                 <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">{{ $task->priority?->label() ?? __('task.priority_medium') }}</x-task.priority-label>
+                @if ($task->isArchived())
+                    <span class="inline-flex items-center rounded-full border border-border/80 bg-card/80 px-2.5 py-1 text-xs text-muted-foreground">{{ __('task.archived_badge') }}</span>
+                @endif
                 <div class="text-muted-foreground text-sm">{{ $task->created_at->diffForHumans() }}</div>
                 @if ($task->due_date)
                     <div id="task-deadline" class="text-muted-foreground text-sm">{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</div>
@@ -538,6 +563,54 @@
         @endif
 
         @if ($canEditTask)
+            <x-modal name="archive-task-confirmation" :title="__('task.archive_task_confirm_title')" maxWidth="max-w-md">
+                <div class="space-y-4">
+                    <p class="text-sm text-muted-foreground">{{ __('task.archive_task_confirm_message') }}</p>
+
+                    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <button
+                            type="button"
+                            @click="$dispatch('close-modal')"
+                            class="btn btn-outlined h-10 px-4"
+                        >
+                            {{ __('task.cancel') }}
+                        </button>
+
+                        <form method="POST" action="{{ route('task.archive', $task) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn h-10 px-4">
+                                {{ __('task.archive_task_confirm_button') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </x-modal>
+
+            <x-modal name="restore-task-confirmation" :title="__('task.restore_task_confirm_title')" maxWidth="max-w-md">
+                <div class="space-y-4">
+                    <p class="text-sm text-muted-foreground">{{ __('task.restore_task_confirm_message') }}</p>
+
+                    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <button
+                            type="button"
+                            @click="$dispatch('close-modal')"
+                            class="btn btn-outlined h-10 px-4"
+                        >
+                            {{ __('task.cancel') }}
+                        </button>
+
+                        <form method="POST" action="{{ route('task.restore', $task) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn h-10 px-4">
+                                {{ __('task.restore_task_confirm_button') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </x-modal>
+
             <x-modal name="delete-task-confirmation" :title="__('task.delete_task_confirm_title')" maxWidth="max-w-md">
                 <div class="space-y-4">
                     <p class="text-sm text-muted-foreground">{{ __('task.delete_task_confirm_message') }}</p>
@@ -582,7 +655,7 @@
                         <div class="flex items-center justify-between gap-2 rounded-lg border border-border/70 bg-card/65 px-3 py-2 text-xs">
                             <div class="min-w-0">
                                 <p class="truncate font-medium text-foreground">{{ $collaborator->name }}</p>
-                                <p class="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{{ __('task.collaborators') }}</p>
+                                <p class="truncate text-[11px] text-muted-foreground">{{ $collaborator->email }}</p>
                             </div>
 
                             @if ($canManageCollaborators)
@@ -701,14 +774,29 @@
                                 $meta = $log->metadata ?? [];
                                 $actorName = $log->actor?->name ?? __('task.activity_system');
                                 $activityKey = 'task.activity_'.$log->action;
+                                $fromStatus = \App\TaskStatus::tryFrom((string) ($meta['from'] ?? ''));
+                                $toStatus = \App\TaskStatus::tryFrom((string) ($meta['to'] ?? ''));
+                                $changeEntries = \App\Models\Task::activityChangeEntries($meta);
                                 $activityText = \Illuminate\Support\Facades\Lang::has($activityKey)
-                                    ? __($activityKey, ['from' => $meta['from'] ?? '-', 'to' => $meta['to'] ?? '-', 'step' => $meta['step'] ?? '-', 'collaborator' => $meta['collaborator'] ?? '-', 'invitee' => $meta['invitee'] ?? '-'])
+                                    ? __($activityKey, ['from' => $fromStatus?->label() ?? ($meta['from'] ?? '-'), 'to' => $toStatus?->label() ?? ($meta['to'] ?? '-'), 'step' => $meta['step'] ?? '-', 'collaborator' => $meta['collaborator'] ?? '-', 'invitee' => $meta['invitee'] ?? '-'])
                                     : __('task.activity_unknown', ['action' => str_replace('_', ' ', $log->action)]);
                             @endphp
                             <div class="rounded-lg border border-border/70 bg-card/70 px-3 py-2">
                                 <p class="text-sm text-foreground/90">
                                     {{ $activityText }}
                                 </p>
+                                @if ($changeEntries->isNotEmpty())
+                                    <div class="mt-2 space-y-1.5 rounded-lg border border-border/60 bg-card/55 px-2.5 py-2">
+                                        @foreach ($changeEntries as $change)
+                                            <p class="text-xs text-muted-foreground">
+                                                <span class="font-medium text-foreground/90">{{ $change['label'] }}</span>
+                                                <span class="mx-1 text-foreground/55">{{ $change['from'] }}</span>
+                                                <span class="text-foreground/45">&rarr;</span>
+                                                <span class="ml-1 text-foreground/80">{{ $change['to'] }}</span>
+                                            </p>
+                                        @endforeach
+                                    </div>
+                                @endif
                                 <p class="mt-0.5 text-xs text-muted-foreground">
                                     {{ __('task.activity_by', ['name' => $actorName]) }} &middot; {{ $log->created_at->diffForHumans() }}
                                 </p>
