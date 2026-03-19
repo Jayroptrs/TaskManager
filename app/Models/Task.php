@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\TaskPriority;
 use App\TaskStatus;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\UserAuditLog;
 
 class Task extends Model
@@ -28,6 +31,7 @@ class Task extends Model
         'status',
         'priority',
         'due_date',
+        'archived_at',
         'reminder_days',
         'tags',
         'links',
@@ -40,6 +44,7 @@ class Task extends Model
         'status' => TaskStatus::class,
         'priority' => TaskPriority::class,
         'due_date' => 'date',
+        'archived_at' => 'datetime',
         'reminder_days' => 'array',
     ];
 
@@ -81,10 +86,11 @@ class Task extends Model
         return ! empty($this->image_path) && ! str_starts_with($this->image_path, 'images/');
     }
 
-    public static function statusCounts(User $user): Collection
+    public static function statusCounts(User $user, string $archive = 'active'): Collection
     {
         $counts = static::query()
             ->visibleTo($user)
+            ->applyArchiveState($archive)
             ->selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
@@ -103,6 +109,25 @@ class Task extends Model
                 ->where('user_id', $user->id)
                 ->orWhereHas('collaborators', fn (Builder $q) => $q->where('users.id', $user->id));
         });
+    }
+
+    public function scopeNotArchived(Builder $query): Builder
+    {
+        return $query->whereNull('archived_at');
+    }
+
+    public function scopeArchived(Builder $query): Builder
+    {
+        return $query->whereNotNull('archived_at');
+    }
+
+    public function scopeApplyArchiveState(Builder $query, string $archive): Builder
+    {
+        return match ($archive) {
+            'archived' => $query->archived(),
+            'all' => $query,
+            default => $query->notArchived(),
+        };
     }
 
     public function user(): BelongsTo
@@ -170,6 +195,62 @@ class Task extends Model
                 'created_at' => now(),
             ]);
         }
+    }
+
+    public function activitySnapshot(): array
+    {
+        return [
+            'title' => (string) ($this->title ?? ''),
+            'description' => (string) ($this->description ?? ''),
+            'status' => $this->status?->value ?? (string) $this->getRawOriginal('status'),
+            'priority' => $this->priority?->value ?? (string) $this->getRawOriginal('priority'),
+            'due_date' => $this->due_date?->toDateString(),
+            'tags' => collect($this->tags ?? [])->values()->all(),
+            'links' => collect($this->links ?? [])->values()->all(),
+            'reminder_days' => $this->normalizedReminderDays()->values()->all(),
+        ];
+    }
+
+    public function activityChangesFrom(array $before): array
+    {
+        $after = $this->activitySnapshot();
+        $supportedFields = ['title', 'description', 'status', 'priority', 'due_date', 'tags', 'links', 'reminder_days'];
+        $changes = [];
+
+        foreach ($supportedFields as $field) {
+            $beforeValue = $before[$field] ?? null;
+            $afterValue = $after[$field] ?? null;
+
+            if ($beforeValue === $afterValue) {
+                continue;
+            }
+
+            $changes[$field] = [
+                'from' => $beforeValue,
+                'to' => $afterValue,
+            ];
+        }
+
+        return $changes;
+    }
+
+    public static function activityChangeEntries(?array $metadata): Collection
+    {
+        return collect(data_get($metadata, 'changes', []))
+            ->map(function (array $change, string $field) {
+                return [
+                    'field' => $field,
+                    'label' => __('task.activity_field_'.$field),
+                    'from' => static::formatActivityFieldValue($field, $change['from'] ?? null),
+                    'to' => static::formatActivityFieldValue($field, $change['to'] ?? null),
+                ];
+            })
+            ->values();
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
     }
 
     public function syncDueDateReminders(?int $triggeredByUserId = null): void
@@ -274,5 +355,37 @@ class Task extends Model
             ->unique()
             ->sortDesc()
             ->values();
+    }
+
+    private static function formatActivityFieldValue(string $field, mixed $value): string
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return __('task.activity_value_empty');
+        }
+
+        return match ($field) {
+            'status' => TaskStatus::tryFrom((string) $value)?->label() ?? (string) $value,
+            'priority' => TaskPriority::tryFrom((string) $value)?->label() ?? (string) $value,
+            'due_date' => static::formatActivityDateValue($value),
+            'tags', 'links', 'reminder_days' => collect(is_array($value) ? $value : [$value])
+                ->map(fn ($item) => (string) $item)
+                ->filter()
+                ->implode(', '),
+            'description' => Str::limit(trim((string) $value), 120),
+            default => (string) $value,
+        };
+    }
+
+    private static function formatActivityDateValue(mixed $value): string
+    {
+        if ($value instanceof CarbonInterface) {
+            return $value->translatedFormat('j M Y');
+        }
+
+        try {
+            return Carbon::parse((string) $value)->translatedFormat('j M Y');
+        } catch (\Throwable) {
+            return (string) $value;
+        }
     }
 }

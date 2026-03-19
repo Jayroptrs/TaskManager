@@ -5,6 +5,7 @@
             'sort' => request('sort'),
             'tag' => request('tag'),
             'work' => request('work'),
+            'due' => request('due'),
             'view' => request('view'),
             'month' => request('month'),
         ];
@@ -18,14 +19,18 @@
         $selectedSort = $selectedSort ?? request('sort', 'newest');
         $selectedTag = $selectedTag ?? request('tag', '');
         $selectedWork = $selectedWork ?? request('work', 'all');
+        $isArchivePage = $isArchivePage ?? false;
+        $taskIndexRouteName = $taskIndexRouteName ?? 'task.index';
         $selectedView = $selectedView ?? match (request('view', 'list')) {
             'board', 'bord' => 'board',
             'calendar', 'kalender' => 'calendar',
             default => 'list',
         };
-        $listViewUrl = route('task.index', array_filter([...request()->except('page'), 'view' => 'list']));
-        $boardViewUrl = route('task.index', array_filter([...request()->except(['page', 'status']), 'view' => 'board']));
-        $calendarViewUrl = route('task.index', array_filter([...request()->except(['page', 'status']), 'view' => 'calendar']));
+        $pageTitle = $pageTitle ?? __('task.page_title');
+        $pageSubtitle = $pageSubtitle ?? __('task.page_subtitle');
+        $listViewUrl = route($taskIndexRouteName, array_filter([...request()->except('page'), 'view' => 'list']));
+        $boardViewUrl = route($taskIndexRouteName, array_filter([...request()->except(['page', 'status']), 'view' => 'board']));
+        $calendarViewUrl = route($taskIndexRouteName, array_filter([...request()->except(['page', 'status']), 'view' => 'calendar']));
     @endphp
 
     <div
@@ -55,69 +60,89 @@
         <section class="surface-card rounded-2xl bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-card)_95%,transparent),color-mix(in_srgb,var(--color-input)_12%,var(--color-card)))] p-3 sm:p-4">
             <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-5">
                 <div>
-                    <h1 class="page-title">{{ __('task.page_title') }}</h1>
-                    <p class="page-subtitle">{{ __('task.page_subtitle') }}</p>
+                    <h1 class="page-title">{{ $pageTitle }}</h1>
+                    <p class="page-subtitle">{{ $pageSubtitle }}</p>
                 </div>
 
                 <div class="flex w-full flex-wrap items-center justify-start gap-2 sm:mt-0 sm:w-auto sm:justify-end">
-                    <button
-                        x-data
-                        @click="$dispatch('open-modal', 'create-task')"
-                        type="button"
-                        class="btn h-9 px-4 text-sm"
-                    >
-                        + {{ __('task.new_task') }}
-                    </button>
+                    @if (! $isArchivePage)
+                        <button
+                            x-data
+                            @click="$dispatch('open-modal', 'create-task')"
+                            type="button"
+                            class="btn h-9 px-4 text-sm"
+                        >
+                            + {{ __('task.new_task') }}
+                        </button>
+                    @endif
 
-                    <div
-                        x-data="{ active: @js($selectedView) }"
-                        class="ml-0 w-full sm:ml-1 sm:w-auto"
+                    <a
+                        href="{{ $isArchivePage ? route('task.index') : route('task.archived') }}"
+                        class="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border/80 bg-card/75 px-4 text-sm font-semibold text-foreground transition-[border-color,background-color,box-shadow,color] duration-200 hover:border-primary/60 hover:bg-card hover:text-foreground hover:shadow-[0_0_18px_color-mix(in_srgb,var(--color-primary)_22%,transparent)]"
                     >
-                        <div class="relative grid w-full grid-cols-3 items-center rounded-full bg-card/75 p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)] sm:w-auto">
-                            <span
-                                class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-primary shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 ease-out will-change-transform"
-                                style="transform: translateX({{ $selectedView === 'board' ? '100%' : ($selectedView === 'calendar' ? '200%' : '0%') }});"
-                                x-bind:style="`transform: translateX(${({ list: '0%', board: '100%', calendar: '200%' })[active] ?? '0%'});`"
-                            ></span>
+                        @if ($isArchivePage)
+                            <svg class="size-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <path d="M6.5 3.5 2 8m0 0 4.5 4.5M2 8h12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+                            </svg>
+                        @else
+                            <svg class="size-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <path d="M3.5 5.5h9m-8 0 .7-1.6A1 1 0 0 1 6.1 3h3.8a1 1 0 0 1 .9.9l.7 1.6m-8 0v6.3c0 .7.5 1.2 1.2 1.2h6.6c.7 0 1.2-.5 1.2-1.2V5.5m-6 2.3h3.2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+                            </svg>
+                        @endif
+                        <span>{{ $isArchivePage ? __('task.back_to_tasks') : __('task.open_archive') }}</span>
+                    </a>
 
-                            <a
-                                href="{{ $listViewUrl }}"
-                                @click.prevent="
-                                    if (active === 'list') return;
-                                    active = 'list';
-                                    setTimeout(() => { window.location.href = '{{ $listViewUrl }}'; }, 110);
-                                "
-                                class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
-                                :class="active === 'list' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
-                            >
-                                {{ __('task.view_list') }}
-                            </a>
-                            <a
-                                href="{{ $boardViewUrl }}"
-                                @click.prevent="
-                                    if (active === 'board') return;
-                                    active = 'board';
-                                    setTimeout(() => { window.location.href = '{{ $boardViewUrl }}'; }, 110);
-                                "
-                                class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
-                                :class="active === 'board' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
-                            >
-                                {{ __('task.view_board') }}
-                            </a>
-                            <a
-                                href="{{ $calendarViewUrl }}"
-                                @click.prevent="
-                                    if (active === 'calendar') return;
-                                    active = 'calendar';
-                                    setTimeout(() => { window.location.href = '{{ $calendarViewUrl }}'; }, 110);
-                                "
-                                class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
-                                :class="active === 'calendar' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
-                            >
-                                {{ __('task.view_calendar') }}
-                            </a>
+                    @if (! $isArchivePage)
+                        <div
+                            x-data="{ active: @js($selectedView) }"
+                            class="ml-0 w-full sm:ml-1 sm:w-auto"
+                        >
+                            <div class="relative grid w-full grid-cols-3 items-center rounded-full bg-card/75 p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)] sm:w-auto">
+                                <span
+                                    class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-primary shadow-[0_0_14px_color-mix(in_srgb,var(--color-primary)_45%,transparent)] transition-transform duration-200 ease-out will-change-transform"
+                                    style="transform: translateX({{ $selectedView === 'board' ? '100%' : ($selectedView === 'calendar' ? '200%' : '0%') }});"
+                                    x-bind:style="`transform: translateX(${({ list: '0%', board: '100%', calendar: '200%' })[active] ?? '0%'});`"
+                                ></span>
+
+                                <a
+                                    href="{{ $listViewUrl }}"
+                                    @click.prevent="
+                                        if (active === 'list') return;
+                                        active = 'list';
+                                        setTimeout(() => { window.location.href = '{{ $listViewUrl }}'; }, 110);
+                                    "
+                                    class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
+                                    :class="active === 'list' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
+                                >
+                                    {{ __('task.view_list') }}
+                                </a>
+                                <a
+                                    href="{{ $boardViewUrl }}"
+                                    @click.prevent="
+                                        if (active === 'board') return;
+                                        active = 'board';
+                                        setTimeout(() => { window.location.href = '{{ $boardViewUrl }}'; }, 110);
+                                    "
+                                    class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
+                                    :class="active === 'board' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
+                                >
+                                    {{ __('task.view_board') }}
+                                </a>
+                                <a
+                                    href="{{ $calendarViewUrl }}"
+                                    @click.prevent="
+                                        if (active === 'calendar') return;
+                                        active = 'calendar';
+                                        setTimeout(() => { window.location.href = '{{ $calendarViewUrl }}'; }, 110);
+                                    "
+                                    class="no-link-hover relative z-10 min-w-0 flex-1 rounded-full px-2.5 py-1.5 text-center text-xs font-semibold transition-colors duration-150 sm:flex-none sm:px-3"
+                                    :class="active === 'calendar' ? 'text-primary-foreground hover:text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
+                                >
+                                    {{ __('task.view_calendar') }}
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </section>
@@ -143,11 +168,13 @@
                 </div>
 
                 <div x-show="filtersOpen" x-transition >
-                    <form method="GET" action="{{ route('task.index') }}" class="space-y-4" x-ref="filtersForm">
+                    <form method="GET" action="{{ route($taskIndexRouteName) }}" class="space-y-4" x-ref="filtersForm">
                         @if ($selectedView !== 'board' && request('status'))
                             <input type="hidden" name="status" value="{{ request('status') }}">
                         @endif
-                        <input type="hidden" name="view" value="{{ in_array($selectedView, ['board', 'calendar'], true) ? $selectedView : 'list' }}">
+                        @if (! $isArchivePage)
+                            <input type="hidden" name="view" value="{{ in_array($selectedView, ['board', 'calendar'], true) ? $selectedView : 'list' }}">
+                        @endif
                         <input type="hidden" name="save_last_filter" value="1">
 
                         <div class="rounded-xl border border-border/80 bg-card/90 p-2.5 shadow-[inset_0_1px_0_color-mix(in_srgb,white_35%,transparent)]">
@@ -321,10 +348,10 @@
                         <div class="mt-4 rounded-xl border border-border/80 bg-card/90 p-2.5 shadow-[inset_0_1px_0_color-mix(in_srgb,white_35%,transparent)]">
                             <p class="mb-1.5 text-[11px] leading-none uppercase tracking-[0.08em] text-muted-foreground">{{ __('task.status') }}</p>
                             <div class="space-y-2">
-                            <a href="{{ route('task.index', array_filter($baseFilters)) }}" class="btn {{ request()->has('status') ? 'btn-outlined' : '' }} w-full text-left">{{ __('task.all_statuses') }}</a>
+                            <a href="{{ route($taskIndexRouteName, array_filter($baseFilters)) }}" class="btn {{ request()->has('status') ? 'btn-outlined' : '' }} w-full text-left">{{ __('task.all_statuses') }}</a>
                             @foreach (App\TaskStatus::cases() as $status)
                                 <a
-                                    href="{{ route('task.index', array_filter([...$baseFilters, 'status' => $status->value])) }}"
+                                    href="{{ route($taskIndexRouteName, array_filter([...$baseFilters, 'status' => $status->value])) }}"
                                     class="btn {{ request('status') === $status->value ? '' : 'btn-outlined' }} w-full text-left"
                                 >
                                     {{ $status->label() }} <span class="text-xs pl-3">{{ $statusCounts->get($status->value) }}</span>
@@ -337,7 +364,7 @@
             </aside>
 
             <div class="min-w-0 text-muted-foreground">
-                @if ($selectedView === 'board')
+                @if (! $isArchivePage && $selectedView === 'board')
                     <div class="grid gap-5 lg:grid-cols-3" data-kanban-board data-csrf="{{ csrf_token() }}">
                         @foreach (App\TaskStatus::cases() as $status)
                             <section class="kanban-column" data-status="{{ $status->value }}">
@@ -365,6 +392,9 @@
                                                     <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">
                                                         {{ $task->priority?->label() ?? __('task.priority_medium') }}
                                                     </x-task.priority-label>
+                                                    @if ($task->isArchived())
+                                                        <span class="inline-flex rounded-full border border-border/80 px-2 py-0.5 text-[11px] text-muted-foreground">{{ __('task.archived_badge') }}</span>
+                                                    @endif
                                                     @if ($task->due_date)
                                                         <p class="text-[11px] text-muted-foreground">{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</p>
                                                     @endif
@@ -390,7 +420,7 @@
                             </section>
                         @endforeach
                     </div>
-                @elseif ($selectedView === 'calendar')
+                @elseif (! $isArchivePage && $selectedView === 'calendar')
                     @php
                         $calendarMonth = $calendarMonth ?? now()->startOfMonth();
                         $tasksByDueDate = $tasksByDueDate ?? collect();
@@ -511,50 +541,71 @@
                 @else
                     <div class="grid md:grid-cols-2 gap-6">
                         @forelse($tasks as $task)
-                            <x-card href="{{ route('task.show', $task) }}">
+                            <x-card href="{{ route('task.show', $task) }}" class="flex h-full flex-col">
                                 @if ($task->imageUrl())
                                     <div class="mb-4 -mx-4 -mt-4 h-60 sm:h-64 rounded-t-lg overflow-hidden">
                                         <img src="{{ $task->imageUrl() }}" alt="" class="h-full w-full object-cover object-center">
                                     </div>
                                 @endif
-                                <h3 class="text-foreground text-lg">{{ $task->title }}</h3>
 
-                                <div class="mt-2 flex flex-wrap items-center gap-2">
-                                    <x-task.status-label :status="$task->status->value">
-                                        {{ $task->status->label() }}
-                                    </x-task.status-label>
-                                    <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">
-                                        {{ $task->priority?->label() ?? __('task.priority_medium') }}
-                                    </x-task.priority-label>
-                                </div>
-
-                                @if ($task->due_date)
-                                    <div class="mt-2 text-xs text-muted-foreground">{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</div>
-                                @endif
-
-                                @if (!empty($task->tags) && count($task->tags))
-                                    <div class="mt-3 flex flex-wrap gap-2">
-                                        @foreach ($task->tags as $tag)
-                                            <span class="inline-block rounded-full border border-border px-2 py-1 text-xs text-foreground/80">#{{ $tag }}</span>
-                                        @endforeach
+                                <div class="flex flex-1 flex-col">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <h3 class="text-lg font-semibold leading-tight text-foreground">{{ $task->title }}</h3>
+                                        <span class="shrink-0 pt-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                                            {{ $task->created_at->diffForHumans() }}
+                                        </span>
                                     </div>
-                                @endif
 
-                                <div class="mt-5 line-clamp-3">{{ $task->description }}</div>
-                                <div class="mt-4">{{ $task->created_at->diffForHumans() }}</div>
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <x-task.status-label :status="$task->status->value">
+                                            {{ $task->status->label() }}
+                                        </x-task.status-label>
+                                        <x-task.priority-label :priority="$task->priority?->value ?? 'medium'">
+                                            {{ $task->priority?->label() ?? __('task.priority_medium') }}
+                                        </x-task.priority-label>
+                                        @if ($task->isArchived())
+                                            <span class="inline-flex rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">{{ __('task.archived_badge') }}</span>
+                                        @endif
+                                    </div>
+
+                                    @if (!empty($task->description))
+                                        <div class="mt-4 rounded-xl border border-border/65 bg-card/55 px-3 py-2.5 text-sm leading-relaxed text-foreground/90 shadow-[inset_0_1px_0_color-mix(in_srgb,white_18%,transparent)]">
+                                            <p class="line-clamp-3">{{ $task->description }}</p>
+                                        </div>
+                                    @endif
+
+                                    <div class="mt-auto space-y-3 pt-4">
+                                        @if ($task->due_date)
+                                            <div class="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span class="inline-block h-2 w-2 rounded-full bg-primary/80 shadow-[0_0_10px_color-mix(in_srgb,var(--color-primary)_36%,transparent)]"></span>
+                                                <span>{{ __('task.due_date_short', ['date' => $task->due_date->translatedFormat('j M Y')]) }}</span>
+                                            </div>
+                                        @endif
+
+                                        @if (!empty($task->tags) && count($task->tags))
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach ($task->tags as $tag)
+                                                    <span class="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-foreground/80">#{{ $tag }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                             </x-card>
                         @empty
                             <div class="empty-state md:col-span-2">
                                 <p class="empty-state-title">{{ __('task.no_tasks_found') }}</p>
-                                <p class="empty-state-copy">{{ __('task.page_subtitle') }}</p>
-                                <button
-                                    x-data
-                                    @click="$dispatch('open-modal', 'create-task')"
-                                    type="button"
-                                    class="btn mt-3 h-9 px-4 text-sm"
-                                >
-                                    + {{ __('task.new_task') }}
-                                </button>
+                                <p class="empty-state-copy">{{ $pageSubtitle }}</p>
+                                @unless ($isArchivePage)
+                                    <button
+                                        x-data
+                                        @click="$dispatch('open-modal', 'create-task')"
+                                        type="button"
+                                        class="btn mt-3 h-9 px-4 text-sm"
+                                    >
+                                        + {{ __('task.new_task') }}
+                                    </button>
+                                @endunless
                             </div>
                         @endforelse
                     </div>

@@ -5,7 +5,7 @@
     'backHref' => null,
     'backText' => null,
 ])
-<div class="flex items-start justify-center px-4 pt-24 pb-8 sm:min-h-[calc(100dvh-4rem)] sm:items-start sm:pt-14 sm:pb-4">
+<div class="flex items-start justify-center px-4 pt-24 pb-8 sm:min-h-[calc(100dvh-10rem)] sm:items-center sm:py-18">
     <div class="w-full {{ $maxWidth }}">
         <div class="rounded-2xl border border-border/80 bg-[linear-gradient(160deg,color-mix(in_srgb,var(--color-card)_96%,white_4%),color-mix(in_srgb,var(--color-input)_20%,var(--color-card)))] p-6 sm:p-8 shadow-[0_20px_45px_color-mix(in_srgb,black_10%,transparent),0_0_22px_color-mix(in_srgb,var(--color-primary)_14%,transparent)]">
         @if($backHref)
@@ -29,4 +29,3 @@
         @endisset
     </div>
 </div>
-

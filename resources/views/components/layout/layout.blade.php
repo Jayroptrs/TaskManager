@@ -21,7 +21,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-background text-foreground antialiased">
-    <div class="min-h-screen min-h-dvh flex flex-col">
+    <div class="neon-scene" data-neon-scene aria-hidden="true">
+        <div class="neon-scene-layer neon-scene-backdrop"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--green" data-neon-orb data-start-x="12" data-start-y="16"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--cyan" data-neon-orb data-start-x="84" data-start-y="14"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--rose" data-neon-orb data-start-x="72" data-start-y="72"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--pink" data-neon-orb data-start-x="90" data-start-y="48"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--orange" data-neon-orb data-start-x="54" data-start-y="20"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--violet" data-neon-orb data-start-x="18" data-start-y="78"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--yellow" data-neon-orb data-start-x="48" data-start-y="84"></div>
+        <div class="neon-scene-layer neon-scene-vignette"></div>
+        <div class="neon-scene-layer neon-orb neon-orb--cursor" data-cursor-orb></div>
+    </div>
+
+    <div class="app-shell min-h-screen min-h-dvh flex flex-col">
         <x-layout.nav />
         
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 pb-6 sm:px-6 sm:pb-12">

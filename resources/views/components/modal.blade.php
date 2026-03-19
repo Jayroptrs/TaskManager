@@ -8,6 +8,11 @@
             let count = Number.parseInt(body.dataset[key] ?? '0', 10);
 
             if (value) {
+                $nextTick(() => {
+                    if ($refs.panel) {
+                        $refs.panel.scrollTop = 0;
+                    }
+                });
                 count += 1;
                 body.dataset[key] = String(count);
                 body.classList.add('overflow-hidden');
@@ -54,6 +59,7 @@
     <x-card
         is="div"
         :hoverable="false"
+        x-ref="panel"
         @click.away="show = false"
         class="modal-scrollbar shadow-xl {{ $maxWidth }} w-full max-h-[85dvh] overflow-auto"
     >

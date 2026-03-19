@@ -205,6 +205,22 @@ test('removed collaborator immediately loses access to task', function () {
         ->assertForbidden();
 });
 
+test('task manage modal shows collaborator email next to collaborator name', function () {
+    $owner = User::factory()->create();
+    $collaborator = User::factory()->create([
+        'name' => 'Test Samenwerker',
+        'email' => 'test.samenwerker@example.com',
+    ]);
+    $task = Task::factory()->create(['user_id' => $owner->id]);
+    $task->collaborators()->attach($collaborator->id, ['added_by' => $owner->id]);
+
+    $this->actingAs($owner)
+        ->get(route('task.show', $task))
+        ->assertOk()
+        ->assertSee('Test Samenwerker')
+        ->assertSee('test.samenwerker@example.com');
+});
+
 test('invite by email records collaboration request activity log', function () {
     $owner = User::factory()->create();
     $invitee = User::factory()->create(['email' => 'invitee-log@example.com']);

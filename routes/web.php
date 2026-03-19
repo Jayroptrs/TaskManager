@@ -59,11 +59,14 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/tasks/invites/{token}', [TaskCollaborationController::class, 'acceptInvite'])->name('task.invites.accept')->middleware('throttle:collaboration-actions');
 
     Route::get('/tasks', [TaskController::class, 'index'])->name('task.index');
+    Route::get('/tasks/archive', [TaskController::class, 'archived'])->name('task.archived');
     Route::post('/tasks', [TaskController::class, 'store'])->name('task.store');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('task.show');
 
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('task.update');
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('task.status.update');
+    Route::patch('/tasks/{task}/archive', [TaskController::class, 'archive'])->name('task.archive');
+    Route::patch('/tasks/{task}/restore', [TaskController::class, 'restore'])->name('task.restore');
     Route::post('/tasks/{task}/collaborators/email', [TaskCollaborationController::class, 'inviteByEmail'])->name('task.collaborators.email')->middleware('throttle:collaboration-actions');
     Route::delete('/tasks/{task}/collaborators/{user}', [TaskCollaborationController::class, 'removeCollaborator'])->name('task.collaborators.destroy')->middleware('throttle:collaboration-actions');
     Route::post('/tasks/{task}/leave', [TaskCollaborationController::class, 'leave'])->name('task.leave')->middleware('throttle:collaboration-actions');

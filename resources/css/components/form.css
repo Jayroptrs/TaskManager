@@ -169,6 +169,12 @@ input[type='date'].form-control.is-filled:not(:focus):not(:focus-visible) {
     box-shadow: 0 0 0 1px color-mix(in srgb, #22c55e 35%, transparent);
 }
 
+.form-control.is-invalid:not(:focus):not(:focus-visible),
+.form-control.is-invalid:hover:not(:focus):not(:focus-visible) {
+    border-color: color-mix(in srgb, #ef4444 76%, var(--color-border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, #ef4444 34%, transparent);
+}
+
 .label {
     display: block;
     font-size: var(--text-sm);

@@ -29,6 +29,8 @@
 <x-modal name="{{ $task->exists ? 'edit-task' : 'create-task' }}" title="{{ $task->exists ? __('task.modal_edit_title') : __('task.modal_create_title') }}" maxWidth="max-w-4xl">
     <form
         x-data="{
+        todayDate: @js(now()->toDateString()),
+        clientErrors: {},
         status: @js(old('status', $task->status->value)),
         priority: @js(old('priority', $task->priority?->value ?? \App\TaskPriority::MEDIUM->value)),
         dueDate: @js(old('due_date', $task->due_date?->toDateString())),
@@ -119,12 +121,32 @@
             }
             this.newTag = '';
         },
+        hasPastDueDate() {
+            const value = String(this.dueDate ?? '').trim();
+            return value !== '' && value < this.todayDate;
+        },
+        clearClientError(field) {
+            delete this.clientErrors[field];
+        },
+        validateClientSide() {
+            this.clientErrors = {};
+
+            const title = String(this.$refs.titleInput?.value ?? '').trim();
+            if (title.length === 0) {
+                this.clientErrors.title = @js(__('task.title_required_error'));
+                this.$nextTick(() => this.$refs.titleInput?.focus());
+            }
+
+            return Object.keys(this.clientErrors).length === 0;
+        },
         }"
         @keydown.escape.stop="$dispatch('close-modal')"
         @task-create-due-date-selected.window="dueDate = $event.detail?.dueDate ?? dueDate"
+        @submit="if (!validateClientSide()) { $event.preventDefault(); }"
         method="POST"
         action="{{ $task->exists ? route('task.update', $task) : route('task.store') }}"
         enctype="multipart/form-data"
+        novalidate
         >
         @csrf
 
@@ -139,7 +161,11 @@
                 :placeholder="__('task.title_placeholder')"
                 autofocus
                 required
+                x-ref="titleInput"
+                @input="clearClientError('title')"
+                @blur="if (String($event.target.value ?? '').trim() === '') { clientErrors.title = @js(__('task.title_required_error')); }"
                 :value="$task->title"/>
+            <p x-show="clientErrors.title" x-text="clientErrors.title" class="-mt-2 text-sm text-red-500" x-cloak></p>
 
             <div class="grid gap-4 lg:grid-cols-2">
                 <div class="{{ $panelClass }} space-y-2">
@@ -202,6 +228,15 @@
                         x-model="dueDate"
                         x-bind:class="String(dueDate ?? '').trim() !== '' ? 'is-filled' : ''"
                     />
+                    <p
+                        x-show="hasPastDueDate()"
+                        x-transition.opacity.duration.180ms
+                        class="mt-2 inline-flex items-center gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-2.5 py-1.5 text-xs text-amber-200"
+                        x-cloak
+                    >
+                        <span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-amber-400/80"></span>
+                        <span>{{ __('task.past_due_date_warning') }}</span>
+                    </p>
                 </div>
 
                 <div

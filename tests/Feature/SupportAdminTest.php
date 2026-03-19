@@ -465,6 +465,37 @@ test('admin user tasks page includes tasks where user is collaborator', function
         ->assertSee(__('admin.user_task_role_collaborator'));
 });
 
+test('admin user tasks page shows collaborator emails on task cards', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+    $targetUser = User::factory()->create([
+        'name' => 'Samenwerker',
+        'email' => 'samenwerker@example.com',
+    ]);
+    $owner = User::factory()->create();
+    $extraCollaborator = User::factory()->create([
+        'name' => 'Tweede Helper',
+        'email' => 'tweede.helper@example.com',
+    ]);
+
+    $task = Task::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Taak met e-mails',
+    ]);
+    $task->collaborators()->attach([
+        $targetUser->id => ['added_by' => $owner->id],
+        $extraCollaborator->id => ['added_by' => $owner->id],
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.tasks', $targetUser))
+        ->assertOk()
+        ->assertSee($task->title)
+        ->assertSee('Samenwerker')
+        ->assertSee('samenwerker@example.com')
+        ->assertSee('Tweede Helper')
+        ->assertSee('tweede.helper@example.com');
+});
+
 test('admin user audit section shows task activity from selected user', function () {
     $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
     $user = User::factory()->create(['name' => 'Audit Target']);
@@ -494,6 +525,9 @@ test('admin user audit section shows task activity from selected user', function
         ->assertSee(__('admin.user_audit_title'))
         ->assertSee('Audit taak titel bijgewerkt')
         ->assertSee(__('task.activity_task_updated'))
+        ->assertSee(__('task.activity_field_title'))
+        ->assertSee('Audit taak titel')
+        ->assertSee('Audit taak titel bijgewerkt')
         ->assertSee(__('task.activity_task_deleted'));
 
     $this->assertDatabaseHas('user_audit_logs', [
@@ -637,7 +671,10 @@ test('collaborator task actions are visible in selected user audit with owner me
         ->get(route('admin.users.tasks', $collaborator))
         ->assertOk()
         ->assertSee('Gedeelde audit taak')
-        ->assertSee(__('task.activity_status_changed', ['from' => 'pending', 'to' => 'in_progress']));
+        ->assertSee(__('task.activity_status_changed', [
+            'from' => \App\TaskStatus::PENDING->label(),
+            'to' => \App\TaskStatus::IN_PROGRESS->label(),
+        ]));
 
     $this->assertDatabaseHas('user_audit_logs', [
         'target_user_id' => $collaborator->id,
